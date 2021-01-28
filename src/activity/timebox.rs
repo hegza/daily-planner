@@ -3,6 +3,7 @@ use std::fmt;
 use super::Activity;
 use crate::Time;
 
+/// A time box with a set activity and possibly a time slot.
 #[derive(Clone, Debug)]
 pub struct TimeBox {
     pub time: Option<TimeSlotKind>,
