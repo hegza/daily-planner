@@ -4,20 +4,10 @@ mod schedule;
 mod template;
 mod time;
 
-use activity::timebox::TimeSlotKind;
 use clap::{App, Arg};
-use crossterm::{
-    cursor,
-    event::{read, Event, KeyCode, KeyEvent, KeyModifiers},
-    style::{self, style, Colorize},
-    terminal::{self, disable_raw_mode, enable_raw_mode},
-    ExecutableCommand, QueueableCommand, Result,
-};
-use std::{
-    fs,
-    io::{stdout, Write},
-    str::FromStr,
-};
+use crossterm::Result;
+use editor::{Editor, EditorLike};
+use std::{fs, str::FromStr};
 use template::{Template, TemplateMeta};
 use time::Duration;
 pub use time::{Clock, Time};
@@ -46,89 +36,10 @@ fn main() -> Result<()> {
     };
     let schedule = template.schedule(meta);
 
-    let mut stdout = stdout();
+    let mut editor = Editor::spawn(schedule)?;
 
-    enable_raw_mode()?;
-
-    stdout.execute(terminal::Clear(terminal::ClearType::All))?;
-    stdout.queue(cursor::MoveTo(0, 0))?;
-
-    let line_count = schedule.0.len();
-    for (line_y, time_box) in schedule.0.iter().enumerate() {
-        let t_str = match &time_box.time {
-            Some(t) => format!("{}", t),
-            None => "     ".to_owned(),
-        };
-        let content = format!("{:<12} {}", t_str, time_box.activity);
-        let styled = style(content);
-        stdout
-            .queue(style::PrintStyledContent(styled))?
-            .queue(cursor::MoveToNextLine(1))?;
-    }
-    stdout.flush()?;
-    if let Some(last_timed_item) = schedule
-        .0
-        .iter()
-        .rev()
-        .find_map(|time_box| time_box.time.clone())
-    {
-        let first_timed_item = schedule
-            .0
-            .iter()
-            .find_map(|time_box| time_box.time.clone())
-            .unwrap();
-        let first_time = match &first_timed_item {
-            TimeSlotKind::Time(t) => t,
-            TimeSlotKind::Span(start, _) => start,
-        };
-        let last_time = match &last_timed_item {
-            TimeSlotKind::Time(t) => t,
-            TimeSlotKind::Span(_, end) => end,
-        };
-        let time_left: Time = Clock::difference(last_time, first_time).into();
-        //let time_left: Time = (Duration::hm(24, 0) + first_time.into() - last_time.into()).into;
-        stdout
-            .queue(style::Print(format!(
-                "{} left unscheduled / sleep",
-                time_left
-            )))?
-            .queue(cursor::MoveToNextLine(1))?;
-    }
-    stdout
-        .queue(style::Print("ctrl+q to exit"))?
-        .queue(cursor::MoveToNextLine(1))?;
-    stdout.flush()?;
-
-    // Detect keys
-    loop {
-        match read().unwrap() {
-            Event::Key(KeyEvent {
-                code: KeyCode::Char('q'),
-                modifiers: KeyModifiers::CONTROL,
-            }) => break,
-            Event::Key(KeyEvent {
-                code: KeyCode::Char('k'),
-                modifiers: _,
-            }) => {
-                stdout.queue(cursor::MoveUp(1))?.flush()?;
-            }
-            Event::Key(KeyEvent {
-                code: KeyCode::Char('j'),
-                modifiers: _,
-            }) => {
-                stdout.queue(cursor::MoveDown(1))?.flush()?;
-            }
-            Event::Key(KeyEvent {
-                code: KeyCode::Char('l'),
-                modifiers: _,
-            }) => {
-                stdout.queue(cursor::MoveRight(1))?.flush()?;
-            }
-            _ => (),
-        }
-    }
-
-    disable_raw_mode()?;
+    // Capture IO in main loop
+    editor.attach();
 
     Ok(())
 }
