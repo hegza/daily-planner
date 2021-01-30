@@ -3,9 +3,8 @@ use std::{io::stdout, panic};
 use super::Editor;
 use crate::schedule::Schedule;
 use crossterm::{
-    cursor,
-    terminal::{self, disable_raw_mode, enable_raw_mode},
-    ExecutableCommand, QueueableCommand, Result,
+    terminal::{disable_raw_mode, enable_raw_mode},
+    Result,
 };
 
 pub trait EditorLike<Ed>
@@ -19,14 +18,14 @@ where
 impl EditorLike<Editor> for Editor {
     /// Creates the editor, attaches to stdout and sets raw mode
     fn spawn(schedule: Schedule) -> Result<Editor> {
-        let mut stdout = stdout();
+        let stdout = stdout();
 
         // Enable raw mode and disable it on panic
         enable_raw_mode()?;
-        panic::set_hook(Box::new(|_| disable_raw_mode().unwrap()));
-
-        stdout.execute(terminal::Clear(terminal::ClearType::All))?;
-        stdout.queue(cursor::MoveTo(0, 0))?;
+        panic::set_hook(Box::new(|panic_info| {
+            disable_raw_mode().unwrap();
+            eprintln!("{}", panic_info);
+        }));
 
         let editor = Editor::with_stdout(stdout, schedule);
 
@@ -35,7 +34,10 @@ impl EditorLike<Editor> for Editor {
 
     fn attach(&mut self) {
         // Disable raw mode on error
-        let on_error = |_| disable_raw_mode().unwrap();
+        let on_error = |err| {
+            disable_raw_mode().unwrap();
+            panic!(err)
+        };
 
         self.run().unwrap_or_else(on_error)
     }

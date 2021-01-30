@@ -10,4 +10,6 @@ pub enum Error {
     Crossterm(#[from] ErrorKind),
     #[error("I/O error")]
     Io(#[from] io::Error),
+    #[error("strfmt format error")]
+    Strfmt(#[from] strfmt::FmtError),
 }

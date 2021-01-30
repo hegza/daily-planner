@@ -1,6 +1,5 @@
 use chrono::{NaiveTime, Timelike};
 use std::{
-    convert::TryInto,
     fmt,
     ops::{Add, AddAssign, Sub, SubAssign},
     str::FromStr,

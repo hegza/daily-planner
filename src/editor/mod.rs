@@ -1,6 +1,10 @@
 mod api;
-mod editor;
+pub mod command;
+mod cursor;
+pub mod editor;
 mod error;
+mod map_cursor;
+mod render;
 
 pub use api::EditorLike;
 pub use editor::Editor;

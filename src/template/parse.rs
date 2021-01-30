@@ -81,11 +81,11 @@ impl<'t> TemplateTimeBoxParser<'t> {
             return Err(ParseError::EmptyString);
         }
 
-        let mut next = *first.unwrap();
+        let next = *first.unwrap();
         let first_char = next.trim().chars().nth(0).unwrap();
         if MARKDOWN_LIST_TOKENS.contains(&first_char) {
             // Skip it
-            next = self.tokens.next().unwrap();
+            self.tokens.next().unwrap();
         }
 
         let mut time = None;

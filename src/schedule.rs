@@ -1,4 +1,4 @@
-use crate::{activity::TimeBox, template::Template};
+use crate::activity::TimeBox;
 
 /// Main data structure
 #[derive(Clone, Debug)]

@@ -1,5 +1,6 @@
 mod activity;
 mod editor;
+mod keys;
 mod schedule;
 mod template;
 mod time;
