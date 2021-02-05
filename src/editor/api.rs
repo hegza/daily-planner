@@ -2,6 +2,7 @@ use std::{io::stdout, panic};
 
 use super::Editor;
 use crate::schedule::Schedule;
+use backtrace::Backtrace;
 use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
     Result,
@@ -24,6 +25,9 @@ impl EditorLike<Editor> for Editor {
         enable_raw_mode()?;
         panic::set_hook(Box::new(|panic_info| {
             disable_raw_mode().unwrap();
+
+            let bt = Backtrace::new();
+            eprintln!("{:?}", bt);
             eprintln!("{}", panic_info);
         }));
 
@@ -36,7 +40,10 @@ impl EditorLike<Editor> for Editor {
         // Disable raw mode on error
         let on_error = |err| {
             disable_raw_mode().unwrap();
-            panic!(err)
+
+            let bt = Backtrace::new();
+            eprintln!("{:?}", bt);
+            eprintln!("{}", err);
         };
 
         self.run().unwrap_or_else(on_error)

@@ -15,7 +15,7 @@ impl Schedule {
         let out_y = content_y + render_y;
 
         let content_on_line = &self.0[content_y as usize].activity.summary;
-        if content_x >= content_on_line.chars().count() as u16 {
+        if content_x >= content_on_line.chars().count() as u16 + 1 {
             return None;
         }
 
@@ -48,7 +48,7 @@ impl Schedule {
 
         let char_idx = match (cursor_x as usize).checked_sub(Self::time_col_width() + 1) {
             Some(char_idx) => {
-                if char_idx >= content_on_line.chars().count() {
+                if char_idx >= content_on_line.chars().count() + 2 {
                     // Out-of-bounds, content is leftwards
                     return None;
                 }

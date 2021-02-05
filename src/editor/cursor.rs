@@ -12,7 +12,9 @@ use crate::schedule::Schedule;
 pub struct ContentCursor {
     // Ghost position of the cursor
     hghost: u16,
+    /// The horizontal position of the cursor on terminal
     hpos: u16,
+    /// The vertical position of the cursor on terminal
     vpos: u16,
     schedule_y: u16,
 }
@@ -39,6 +41,19 @@ impl ContentCursor {
             hpos,
             vpos,
         }
+    }
+
+    /// This method may panic, if called for an invalid content cursor
+    pub fn map_to_content(
+        &self,
+        schedule: &Schedule,
+        schedule_y: u16,
+        schedule_h: u16,
+    ) -> (usize, usize) {
+        let (x, y) = schedule
+            .map_cursor_to_content(self.hpos, self.vpos, schedule_y, schedule_h)
+            .expect("failed to map cursor to content");
+        (x as usize, y as usize)
     }
 
     pub fn redraw(&self, stdout: &mut Stdout) -> Result<()> {
@@ -135,17 +150,26 @@ impl ContentCursor {
             return Ok(false);
         };
 
+        self.move_to_content(
+            n_mapped_x, n_mapped_y, stdout, schedule, schedule_y, schedule_h,
+        )
+    }
+
+    pub fn move_to_content(
+        &mut self,
+        content_x: u16,
+        content_y: u16,
+        stdout: &mut Stdout,
+        schedule: &Schedule,
+        schedule_y: u16,
+        schedule_h: u16,
+    ) -> Result<bool> {
         // Restore screen position by mapping the content to screen
         let n_cur_pos =
-            match schedule.map_content_to_screen(n_mapped_x, n_mapped_y, schedule_y, schedule_h) {
+            match schedule.map_content_to_screen(content_x, content_y, schedule_y, schedule_h) {
                 Some(pos) => pos,
                 None => return Ok(false),
             };
-
-        // Save ghost on horizontal move
-        if delta.0.abs() >= 1 {
-            self.hghost = n_cur_pos.1;
-        }
 
         self.hpos = n_cur_pos.0;
         self.vpos = n_cur_pos.1;

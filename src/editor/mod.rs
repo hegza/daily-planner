@@ -1,6 +1,6 @@
 mod api;
 pub mod command;
-mod cursor;
+pub mod cursor;
 pub mod editor;
 mod error;
 mod map_cursor;

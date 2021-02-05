@@ -1,4 +1,5 @@
 mod activity;
+mod edit_schedule;
 mod editor;
 mod keys;
 mod schedule;

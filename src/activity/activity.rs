@@ -7,6 +7,15 @@ pub struct Activity {
     pub kind: ActivityKind,
 }
 
+impl Default for Activity {
+    fn default() -> Self {
+        Activity {
+            summary: String::new(),
+            kind: ActivityKind::Unknown,
+        }
+    }
+}
+
 impl fmt::Display for Activity {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", &self.summary)

@@ -24,3 +24,12 @@ impl fmt::Display for TimeSlotKind {
         }
     }
 }
+
+impl Default for TimeBox {
+    fn default() -> Self {
+        TimeBox {
+            time: None,
+            activity: Activity::default(),
+        }
+    }
+}

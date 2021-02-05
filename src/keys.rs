@@ -76,6 +76,17 @@ pub const BINDINGS: &[Binding] = &[
         Command::MoveCursor(Dir::Right),
         Filter::Mode(Mode::Cursor)
     ),
+    bind_key!(
+        'o',
+        Command::InsertTimeBoxBelowAndInsert,
+        Filter::Mode(Mode::Cursor)
+    ),
+    bind!(
+        KeyCode::Char('O'),
+        KeyModifiers::SHIFT,
+        Command::InsertTimeBoxAboveAndInsert,
+        Filter::Mode(Mode::Cursor)
+    ),
     // Time-mode
     bind_key!('i', Command::InsertMode, Filter::Mode(Mode::Time)),
     bind!(
@@ -88,7 +99,7 @@ pub const BINDINGS: &[Binding] = &[
     bind!(
         KeyCode::Esc,
         KeyModifiers::NONE,
-        Command::CursorMode,
+        Command::MoveCursorLeftAndCursorMode,
         Filter::Mode(Mode::Insert)
     ),
     bind!(

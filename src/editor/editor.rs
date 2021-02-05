@@ -7,7 +7,7 @@ use std::{
 use super::{command::Command, cursor::ContentCursor, render::Render, Result};
 use crossterm::{
     cursor,
-    event::{read, Event},
+    event::{read, Event, KeyEvent},
     style, terminal, ExecutableCommand, QueueableCommand,
 };
 
@@ -197,13 +197,72 @@ impl Editor {
                                 // Redraw
                                 true
                             }
+                            Command::InsertTimeBoxBelowAndInsert => {
+                                // Insert time box below
+                                self.schedule.insert_time_box_below(
+                                    self.cursor
+                                        .as_mut()
+                                        .expect("must have cursor when editing schedule"),
+                                    self.schedule_y.expect("schedule must have been rendered"),
+                                    self.schedule_h.expect("schedule must have been rendered"),
+                                    &mut self.stdout,
+                                )?;
+
+                                // -> Insert mode
+                                *self.mode.borrow_mut() = Mode::Insert;
+
+                                // Redraw
+                                true
+                            }
+                            Command::InsertTimeBoxAboveAndInsert => {
+                                // Insert time box below
+                                self.schedule.insert_time_box_above(
+                                    self.cursor
+                                        .as_mut()
+                                        .expect("must have cursor when editing schedule"),
+                                    self.schedule_y.expect("schedule must have been rendered"),
+                                    self.schedule_h.expect("schedule must have been rendered"),
+                                    &mut self.stdout,
+                                )?;
+
+                                // -> Insert mode
+                                *self.mode.borrow_mut() = Mode::Insert;
+
+                                // Redraw
+                                true
+                            }
+                            Command::MoveCursorLeftAndCursorMode => {
+                                self.cursor.as_mut().expect("must have cursor").move_left(
+                                    &mut self.stdout,
+                                    &self.schedule,
+                                    self.schedule_y.unwrap(),
+                                    self.schedule_h.unwrap(),
+                                )?;
+
+                                *self.mode.borrow_mut() = Mode::Cursor;
+                                // Redraw
+                                true
+                            }
                         }
                     }
                     // No command was found for this key
                     else {
-                        if *self.mode.borrow() == Mode::Insert {}
-                        // redraw
-                        false
+                        // Insert mode: make edits to the schedule data-structure
+                        if *self.mode.borrow() == Mode::Insert {
+                            let redraw = self.schedule.edit_content(
+                                &key_ev,
+                                self.cursor
+                                    .as_mut()
+                                    .expect("must have cursor when editing schedule"),
+                                self.schedule_y.expect("schedule must have been rendered"),
+                                self.schedule_h.expect("schedule must have been rendered"),
+                                &mut self.stdout,
+                            )?;
+                            redraw
+                        } else {
+                            // redraw
+                            false
+                        }
                     };
 
                     redraw

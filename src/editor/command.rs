@@ -31,7 +31,10 @@ pub enum Command {
     MoveCursor(Dir),
     InsertMode,
     CursorMode,
+    MoveCursorLeftAndCursorMode,
     TimeMode,
+    InsertTimeBoxBelowAndInsert,
+    InsertTimeBoxAboveAndInsert,
 }
 
 #[derive(Debug, Clone)]
