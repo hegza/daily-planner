@@ -19,7 +19,7 @@ impl Render for Schedule {
                 None => "     ".to_owned(),
             };
 
-            let fmt = format!("{{time:<{}}} {{activity}}", Schedule::time_col_width(),);
+            let fmt = format!("{{time:<{}}} {{activity}}", self.time_col_width(),);
             let mut vars = HashMap::new();
             vars.insert("time".to_owned(), t_str);
             vars.insert("activity".to_owned(), format!("{}", time_box.activity));
@@ -37,7 +37,12 @@ impl Render for Schedule {
 }
 
 impl Schedule {
-    pub fn time_col_width() -> usize {
-        12
+    pub fn time_col_width(&self) -> usize {
+        self.0
+            .iter()
+            .filter_map(|x| x.time.as_ref())
+            .map(|x| format!("{}", x).len())
+            .max_by(|x, y| x.cmp(y))
+            .unwrap_or(0)
     }
 }

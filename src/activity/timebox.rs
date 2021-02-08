@@ -1,7 +1,7 @@
 use std::fmt;
 
 use super::Activity;
-use crate::Time;
+use crate::{time::Duration, Clock, Time};
 
 /// A time box with a set activity and possibly a time slot.
 #[derive(Clone, Debug)]
@@ -20,7 +20,10 @@ impl fmt::Display for TimeSlotKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             TimeSlotKind::Time(t) => t.fmt(f),
-            TimeSlotKind::Span(start, end) => f.write_str(&format!("{}--{}", start, end)),
+            TimeSlotKind::Span(start, end) => {
+                let len: Duration = Duration::from(*end - *start);
+                f.write_str(&format!("{}--{} ({})", start, end, len))
+            }
         }
     }
 }

@@ -19,7 +19,7 @@ impl Schedule {
             return None;
         }
 
-        let out_x = content_x + Self::time_col_width() as u16 + 1;
+        let out_x = content_x + self.time_col_width() as u16 + 1;
 
         Some((out_x, out_y))
     }
@@ -46,7 +46,7 @@ impl Schedule {
         // Content == the summary of the activity
         let content_on_line = &self.0[line_idx].activity.summary;
 
-        let char_idx = match (cursor_x as usize).checked_sub(Self::time_col_width() + 1) {
+        let char_idx = match (cursor_x as usize).checked_sub(self.time_col_width() + 1) {
             Some(char_idx) => {
                 if char_idx >= content_on_line.chars().count() + 2 {
                     // Out-of-bounds, content is leftwards

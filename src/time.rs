@@ -7,6 +7,7 @@ use std::{
 
 use crate::template::template::TimeTemplate;
 
+/// Represents naive time. May be used relatively in the span of 24 hours starting from wake-up, e.g. if wake up was at 10:00, 8:30 could be later than 10:00.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Time {
     hour: u8,
@@ -68,6 +69,7 @@ fn time_rounding() {
     assert_eq!(t3, Time::hm(2, 45));
 }
 
+/// Represents both positive and negative durations.
 #[derive(Clone, Copy, Debug)]
 pub struct Duration(chrono::Duration);
 
@@ -131,6 +133,27 @@ impl FromStr for Time {
 }
 
 // <!-- maths -->
+
+impl Sub<Time> for Time {
+    type Output = Duration;
+
+    /// Calculates the difference between two times, assuming differences less than 24 hours
+    fn sub(self, rhs: Time) -> Self::Output {
+        let self_min = self.hour as i16 * 60 + self.min as i16;
+        let rhs_min = rhs.hour as i16 * 60 + rhs.min as i16;
+
+        let mut diff_min = self_min - rhs_min;
+
+        // The end time was on the next day's side
+        if diff_min < 0 {
+            diff_min = (24 * 60 - rhs_min) + self_min;
+        }
+
+        let hours = diff_min / 60;
+        let mins = diff_min - hours * 60;
+        Duration::hm(hours as u8, mins as u8)
+    }
+}
 
 impl Add<Duration> for Time {
     type Output = Time;
@@ -225,6 +248,27 @@ impl From<Clock> for Time {
         Time {
             hour: c.hour,
             min: c.min,
+        }
+    }
+}
+
+impl From<Clock> for Duration {
+    fn from(c: Clock) -> Self {
+        Duration::hm(c.hour, c.min)
+    }
+}
+
+impl fmt::Display for Duration {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let time: Time = (*self).into();
+        let hour = time.hour;
+        let min = time.min;
+        if min != 0 && hour != 0 {
+            write!(f, "{}h{}m", hour, min)
+        } else if hour != 0 {
+            write!(f, "{}h", hour)
+        } else {
+            write!(f, "{}m", min)
         }
     }
 }

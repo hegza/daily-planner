@@ -108,7 +108,7 @@ impl Editor {
                 TimeSlotKind::Time(t) => t,
                 TimeSlotKind::Span(_, end) => end,
             };
-            let time_left: Time = Clock::difference(last_time, first_time).into();
+            let time_left = *first_time - *last_time;
             stdout
                 .queue(style::Print(format!(
                     "{} left unscheduled / sleep",
