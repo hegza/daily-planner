@@ -1,3 +1,5 @@
+mod math;
+
 use chrono::{NaiveTime, Timelike};
 use std::{
     fmt,
@@ -132,115 +134,9 @@ impl FromStr for Time {
     }
 }
 
-// <!-- maths -->
-
-impl Sub<Time> for Time {
-    type Output = Duration;
-
-    /// Calculates the difference between two times, assuming differences less than 24 hours
-    fn sub(self, rhs: Time) -> Self::Output {
-        let self_min = self.hour as i16 * 60 + self.min as i16;
-        let rhs_min = rhs.hour as i16 * 60 + rhs.min as i16;
-
-        let mut diff_min = self_min - rhs_min;
-
-        // The end time was on the next day's side
-        if diff_min < 0 {
-            diff_min = (24 * 60 - rhs_min) + self_min;
-        }
-
-        let hours = diff_min / 60;
-        let mins = diff_min - hours * 60;
-        Duration::hm(hours as u8, mins as u8)
-    }
-}
-
-impl Add<Duration> for Time {
-    type Output = Time;
-
-    fn add(self, rhs: Duration) -> Self::Output {
-        let nt = NaiveTime::from_hms(self.hour.into(), self.min.into(), 0) + rhs.0;
-
-        Time {
-            hour: nt.hour() as u8,
-            min: nt.minute() as u8,
-        }
-    }
-}
-
-impl Sub<Duration> for Time {
-    type Output = Time;
-
-    fn sub(self, rhs: Duration) -> Self::Output {
-        let nt = NaiveTime::from_hms(self.hour.into(), self.min.into(), 0) - rhs.0;
-
-        Time {
-            hour: nt.hour() as u8,
-            min: nt.minute() as u8,
-        }
-    }
-}
-
-impl AddAssign<Duration> for Time {
-    fn add_assign(&mut self, rhs: Duration) {
-        *self = *self + rhs;
-    }
-}
-
-impl SubAssign<Duration> for Time {
-    fn sub_assign(&mut self, rhs: Duration) {
-        *self = *self - rhs;
-    }
-}
-
-impl Add<Duration> for Duration {
-    type Output = Duration;
-
-    fn add(self, rhs: Duration) -> Self::Output {
-        Duration(self.0 + rhs.0)
-    }
-}
-
-impl Sub<Duration> for Duration {
-    type Output = Duration;
-
-    fn sub(self, rhs: Duration) -> Self::Output {
-        Duration(self.0 - rhs.0)
-    }
-}
-
-impl AddAssign<Duration> for Duration {
-    fn add_assign(&mut self, rhs: Duration) {
-        *self = *self + rhs;
-    }
-}
-
-impl SubAssign<Duration> for Duration {
-    fn sub_assign(&mut self, rhs: Duration) {
-        *self = *self - rhs;
-    }
-}
-
 pub struct Clock {
     hour: u8,
     min: u8,
-}
-
-impl Clock {
-    pub fn difference(start: &Time, end: &Time) -> Clock {
-        let start_minutes = start.hour as i64 * 60 + start.min as i64;
-        let end_minutes = end.hour as i64 * 60 + end.min as i64;
-        let diff_minutes = if start_minutes < end_minutes {
-            end_minutes - start_minutes
-        } else {
-            start_minutes - end_minutes
-        };
-
-        let hour = (diff_minutes / 60) as u8;
-        let min = (diff_minutes - (hour as i64) * 60) as u8;
-
-        Clock { hour, min }
-    }
 }
 
 impl From<Clock> for Time {

@@ -108,11 +108,12 @@ impl Editor {
                 TimeSlotKind::Time(t) => t,
                 TimeSlotKind::Span(_, end) => end,
             };
-            let time_left = *first_time - *last_time;
+            let time_left = first_time - last_time;
             stdout
                 .queue(style::Print(format!(
-                    "{} left unscheduled / sleep",
-                    time_left
+                    "{} left unscheduled / sleep, wake-up at {}",
+                    time_left,
+                    last_time + &time_left
                 )))?
                 .queue(cursor::MoveToNextLine(1))?;
         }

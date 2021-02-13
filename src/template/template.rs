@@ -64,7 +64,7 @@ impl TimeBoxTemplate {
                     // +0:15, advance by given duration then use that
                     TimeTemplate::RelativeTime(time) => {
                         // Advance time by given duration
-                        *cur_time += *time;
+                        *cur_time += time;
                         TimeSlotKind::Time(*cur_time)
                     }
                 },
@@ -75,7 +75,7 @@ impl TimeBoxTemplate {
                         // +0:15--, advance by given duration then use that
                         TimeTemplate::RelativeTime(time) => {
                             // Advance time by given duration
-                            *cur_time += *time;
+                            *cur_time += time;
                             *cur_time
                         }
                     };
@@ -83,13 +83,13 @@ impl TimeBoxTemplate {
                         // --%H:%M, use default span length
                         TimeTemplate::TimeFormat => {
                             // Advance time by the default span length
-                            *cur_time += *span_len;
+                            *cur_time += span_len;
                             *cur_time
                         }
                         // --+1:00, use given duration as span length
                         TimeTemplate::RelativeTime(duration) => {
                             // Advance time by given length
-                            *cur_time += *duration;
+                            *cur_time += duration;
                             *cur_time
                         }
                     };
