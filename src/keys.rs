@@ -3,7 +3,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use crate::{
     bind, bind_key,
     editor::{
-        command::{Binding, ColumnKind, Command, Dir, Filter},
+        command::{Binding, ColumnKind, Command, Dir, Filter, MoveCursor},
         editor::Mode,
     },
 };
@@ -11,20 +11,35 @@ use crate::{
 /*
     Globals:
     - ctrl + q: quit
+
     Cursor mode:
     - h, l, left arrow, right arrow: move cursor (and ghost) horizontal
     - j, k, down arrow, up arrow: move cursor vertical, account for horizontal ghost
     - i: insert mode
     - t: time mode
     - o: create line below and move in insert mode
+    - O: create line above and move in insert mode
+    - I: go to first column and insert
+    - A: go to last column and insert
+    - 'g' modifier
+        - (NYI) 'g' move cursor to begin of file (first column)
+        - (NYI) 'G' move cursor to end of file (first column)
+    - 'd' modifier 'delete'
+        - d: delete line
+    - p: paste clipboard
 
-    'g' modifier
-        'g' move cursor to begin of file (first column)
-        'G' move cursor to end of file (first column)
-    'd' modifier 'delete'
-        'd' delete row
-    '/' search, on enter: move cursor to first match
-    'ctrl + a' toggle item complete
+    Time mode:
+    - i: insert mode
+    - Esc: cursor mode
+
+    Insert mode:
+    - Esc: cursor mode
+    - Arrow keys: move
+
+    TODO:
+
+    - '/' search, on enter: move cursor to first match
+    - 'ctrl + a' toggle item complete
 */
 
 pub const BINDINGS: &[Binding] = &[
@@ -38,46 +53,46 @@ pub const BINDINGS: &[Binding] = &[
     // Cursor mode
     bind_key!(
         'h',
-        Command::MoveCursor(Dir::Left),
+        Command::MoveCursor(MoveCursor::Dir(Dir::Left)),
         Filter::Mode(Mode::Cursor)
     ),
     bind_key!(
         'l',
-        Command::MoveCursor(Dir::Right),
+        Command::MoveCursor(MoveCursor::Dir(Dir::Right)),
         Filter::Mode(Mode::Cursor)
     ),
     bind_key!(
         'j',
-        Command::MoveCursor(Dir::Down),
+        Command::MoveCursor(MoveCursor::Dir(Dir::Down)),
         Filter::Mode(Mode::Cursor)
     ),
     bind_key!(
         'k',
-        Command::MoveCursor(Dir::Up),
+        Command::MoveCursor(MoveCursor::Dir(Dir::Up)),
         Filter::Mode(Mode::Cursor)
     ),
     bind!(
         KeyCode::Down,
         KeyModifiers::NONE,
-        Command::MoveCursor(Dir::Down),
+        Command::MoveCursor(MoveCursor::Dir(Dir::Down)),
         Filter::Mode(Mode::Cursor)
     ),
     bind!(
         KeyCode::Up,
         KeyModifiers::NONE,
-        Command::MoveCursor(Dir::Up),
+        Command::MoveCursor(MoveCursor::Dir(Dir::Up)),
         Filter::Mode(Mode::Cursor)
     ),
     bind!(
         KeyCode::Left,
         KeyModifiers::NONE,
-        Command::MoveCursor(Dir::Left),
+        Command::MoveCursor(MoveCursor::Dir(Dir::Left)),
         Filter::Mode(Mode::Cursor)
     ),
     bind!(
         KeyCode::Right,
         KeyModifiers::NONE,
-        Command::MoveCursor(Dir::Right),
+        Command::MoveCursor(MoveCursor::Dir(Dir::Right)),
         Filter::Mode(Mode::Cursor)
     ),
     bind_key!('i', Command::InsertMode, Filter::Mode(Mode::Cursor)),
@@ -108,6 +123,32 @@ pub const BINDINGS: &[Binding] = &[
         Command::Multi(&[Command::GoToColumn(ColumnKind::Last), Command::InsertMode]),
         Filter::Mode(Mode::Cursor)
     ),
+    bind!(
+        KeyCode::Char('g'),
+        KeyModifiers::NONE,
+        Command::GoToMode,
+        Filter::Mode(Mode::Cursor)
+    ),
+    bind!(
+        KeyCode::Char('d'),
+        KeyModifiers::NONE,
+        Command::DeleteMode,
+        Filter::Mode(Mode::Cursor)
+    ),
+    bind_key!(
+        'p',
+        Command::Multi(&[
+            Command::PasteBelow,
+            Command::MoveCursor(MoveCursor::Dir(Dir::Down))
+        ]),
+        Filter::Mode(Mode::Cursor)
+    ),
+    bind!(
+        KeyCode::Char('P'),
+        KeyModifiers::SHIFT,
+        Command::PasteAbove,
+        Filter::Mode(Mode::Cursor)
+    ),
     // Time-mode
     bind_key!('i', Command::InsertMode, Filter::Mode(Mode::Time)),
     bind!(
@@ -120,31 +161,55 @@ pub const BINDINGS: &[Binding] = &[
     bind!(
         KeyCode::Esc,
         KeyModifiers::NONE,
-        Command::Multi(&[Command::MoveCursor(Dir::Left), Command::CursorMode]),
+        Command::Multi(&[
+            Command::MoveCursor(MoveCursor::Dir(Dir::Left)),
+            Command::CursorMode
+        ]),
         Filter::Mode(Mode::Insert)
     ),
     bind!(
         KeyCode::Down,
         KeyModifiers::NONE,
-        Command::MoveCursor(Dir::Down),
+        Command::MoveCursor(MoveCursor::Dir(Dir::Down)),
         Filter::Mode(Mode::Insert)
     ),
     bind!(
         KeyCode::Up,
         KeyModifiers::NONE,
-        Command::MoveCursor(Dir::Up),
+        Command::MoveCursor(MoveCursor::Dir(Dir::Up)),
         Filter::Mode(Mode::Insert)
     ),
     bind!(
         KeyCode::Left,
         KeyModifiers::NONE,
-        Command::MoveCursor(Dir::Left),
+        Command::MoveCursor(MoveCursor::Dir(Dir::Left)),
         Filter::Mode(Mode::Insert)
     ),
     bind!(
         KeyCode::Right,
         KeyModifiers::NONE,
-        Command::MoveCursor(Dir::Right),
+        Command::MoveCursor(MoveCursor::Dir(Dir::Right)),
         Filter::Mode(Mode::Insert)
+    ),
+    // GoTo mode
+    /*
+    bind!(
+        KeyCode::Char('g'),
+        KeyModifiers::NONE,
+        Command::MoveCursor(MoveCursor::Top),
+        Filter::Mode(Mode::GoTo)
+    ),
+    bind!(
+        KeyCode::Char('G'),
+        KeyModifiers::SHIFT,
+        Command::MoveCursor(MoveCursor::Bottom),
+        Filter::Mode(Mode::GoTo)
+    ),*/
+    // Delete mode
+    bind!(
+        KeyCode::Char('d'),
+        KeyModifiers::NONE,
+        Command::CutCurrentLine,
+        Filter::Mode(Mode::Delete)
     ),
 ];

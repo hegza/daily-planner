@@ -28,14 +28,26 @@ macro_rules! bind_key {
 #[derive(Debug, Clone)]
 pub enum Command {
     Quit,
-    MoveCursor(Dir),
+    MoveCursor(MoveCursor),
     InsertMode,
     CursorMode,
     TimeMode,
+    GoToMode,
+    DeleteMode,
     InsertTimeBoxBelow,
     InsertTimeBoxAbove,
+    PasteAbove,
+    PasteBelow,
     GoToColumn(ColumnKind),
+    CutCurrentLine,
     Multi(&'static [Command]),
+}
+
+#[derive(Debug, Clone)]
+pub enum MoveCursor {
+    Dir(Dir),
+    Top,
+    Bottom,
 }
 
 #[derive(Debug, Clone)]

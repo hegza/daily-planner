@@ -19,6 +19,8 @@ impl Render for StatusBar {
             Mode::Cursor => "",
             Mode::Insert => "-- INSERT --",
             Mode::Time => "-- ADJUST TIME --",
+            Mode::GoTo => "goto +",
+            Mode::Delete => "delete +",
         };
 
         let content = format!("{}", mode_str);

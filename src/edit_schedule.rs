@@ -10,17 +10,10 @@ use crate::{
 
 impl Schedule {
     /// Returns true if something was changed
-    pub fn edit_content(
-        &mut self,
-        key: &KeyEvent,
-        cursor: &mut ContentCursor,
-        self_y: u16,
-        self_h: u16,
-        stdout: &mut Stdout,
-    ) -> Result<bool> {
+    pub fn edit_content(&mut self, key: &KeyEvent, cursor: &mut ContentCursor) -> Result<bool> {
         let KeyEvent { code, modifiers } = key;
 
-        let pos = cursor.map_to_content(self, self_y, self_h);
+        let pos = cursor.map_to_content();
 
         let edit_text = &mut self.0[pos.1].activity.summary;
         let char_idx = pos.0;
@@ -54,8 +47,7 @@ impl Schedule {
                 let n_text = format!("{}{}{}", start, c, end);
                 *edit_text = n_text;
                 */
-
-                cursor.move_right(stdout, self, self_y, self_h)?;
+                cursor.move_right()?;
                 true
             }
             // Remove the character to the left of cursor, then move cursor left
@@ -65,7 +57,7 @@ impl Schedule {
                     edit_text.remove(remove);
 
                     // Move cursor left
-                    cursor.move_left(stdout, self, self_y, self_h)?;
+                    cursor.move_left()?;
 
                     true
                 } else {
@@ -89,41 +81,9 @@ impl Schedule {
     }
 
     /// Returns true if something was changed
-    pub fn insert_time_box_below(
-        &mut self,
-        cursor: &mut ContentCursor,
-        self_y: u16,
-        self_h: u16,
-        stdout: &mut Stdout,
-    ) -> Result<bool> {
-        let pos = cursor.map_to_content(self, self_y, self_h);
-        let cursor_line = pos.1;
-
+    pub fn insert_time_box(&mut self, idx: usize) -> Result<bool> {
         // "Insert below"
-        self.0.insert(cursor_line + 1, TimeBox::default());
-
-        // Move one down and to the beginning
-        cursor.move_to_content(0, pos.1 as u16 + 1, stdout, self, self_y, self_h)?;
-
-        Ok(true)
-    }
-
-    /// Returns true if something was changed
-    pub fn insert_time_box_above(
-        &mut self,
-        cursor: &mut ContentCursor,
-        self_y: u16,
-        self_h: u16,
-        stdout: &mut Stdout,
-    ) -> Result<bool> {
-        let pos = cursor.map_to_content(self, self_y, self_h);
-        let cursor_line = pos.1;
-
-        // "Insert below"
-        self.0.insert(cursor_line, TimeBox::default());
-
-        // Move one up and to the beginning
-        cursor.move_to_content(0, pos.1 as u16, stdout, self, self_y, self_h)?;
+        self.0.insert(idx, TimeBox::default());
 
         Ok(true)
     }
