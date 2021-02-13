@@ -4,7 +4,12 @@ use std::{
     rc::{Rc, Weak},
 };
 
-use super::{command::Command, cursor::ContentCursor, render::Render, Result};
+use super::{
+    command::{self, Command},
+    cursor::ContentCursor,
+    render::Render,
+    Result,
+};
 use crossterm::{
     cursor,
     event::{read, Event, KeyEvent},
@@ -24,6 +29,7 @@ pub struct Editor {
     pub mode: Rc<RefCell<Mode>>,
     pub schedule: Schedule,
     status_bar: StatusBar,
+    quit: bool,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -50,6 +56,7 @@ impl Editor {
                 mode: Rc::downgrade(&mode),
             },
             mode,
+            quit: false,
         }
     }
 
@@ -135,7 +142,6 @@ impl Editor {
 
     /// Main input processing loop
     fn loop_input(&mut self) -> Result<()> {
-        // TODO: modes
         loop {
             let ev = read()?;
             let redraw = match ev {
@@ -143,108 +149,11 @@ impl Editor {
                     let editor_command = Command::map(key_ev.clone(), self);
 
                     let redraw = if let Some(cmd) = editor_command {
-                        match cmd {
-                            Command::Quit => break,
-                            Command::MoveCursor(dir) => {
-                                match dir {
-                                    super::command::Dir::Up => {
-                                        self.cursor.as_mut().unwrap().move_up(
-                                            &mut self.stdout,
-                                            &self.schedule,
-                                            self.schedule_y.unwrap(),
-                                            self.schedule_h.unwrap(),
-                                        )?;
-                                    }
-                                    super::command::Dir::Down => {
-                                        self.cursor.as_mut().unwrap().move_down(
-                                            &mut self.stdout,
-                                            &self.schedule,
-                                            self.schedule_y.unwrap(),
-                                            self.schedule_h.unwrap(),
-                                        )?;
-                                    }
-                                    super::command::Dir::Left => {
-                                        self.cursor.as_mut().unwrap().move_left(
-                                            &mut self.stdout,
-                                            &self.schedule,
-                                            self.schedule_y.unwrap(),
-                                            self.schedule_h.unwrap(),
-                                        )?;
-                                    }
-                                    super::command::Dir::Right => {
-                                        self.cursor.as_mut().unwrap().move_right(
-                                            &mut self.stdout,
-                                            &self.schedule,
-                                            self.schedule_y.unwrap(),
-                                            self.schedule_h.unwrap(),
-                                        )?;
-                                    }
-                                };
-                                // Redraw
-                                false
-                            }
-                            Command::InsertMode => {
-                                *self.mode.borrow_mut() = Mode::Insert;
-                                // Redraw
-                                true
-                            }
-                            Command::CursorMode => {
-                                *self.mode.borrow_mut() = Mode::Cursor;
-                                // Redraw
-                                true
-                            }
-                            Command::TimeMode => {
-                                *self.mode.borrow_mut() = Mode::Time;
-                                // Redraw
-                                true
-                            }
-                            Command::InsertTimeBoxBelowAndInsert => {
-                                // Insert time box below
-                                self.schedule.insert_time_box_below(
-                                    self.cursor
-                                        .as_mut()
-                                        .expect("must have cursor when editing schedule"),
-                                    self.schedule_y.expect("schedule must have been rendered"),
-                                    self.schedule_h.expect("schedule must have been rendered"),
-                                    &mut self.stdout,
-                                )?;
-
-                                // -> Insert mode
-                                *self.mode.borrow_mut() = Mode::Insert;
-
-                                // Redraw
-                                true
-                            }
-                            Command::InsertTimeBoxAboveAndInsert => {
-                                // Insert time box below
-                                self.schedule.insert_time_box_above(
-                                    self.cursor
-                                        .as_mut()
-                                        .expect("must have cursor when editing schedule"),
-                                    self.schedule_y.expect("schedule must have been rendered"),
-                                    self.schedule_h.expect("schedule must have been rendered"),
-                                    &mut self.stdout,
-                                )?;
-
-                                // -> Insert mode
-                                *self.mode.borrow_mut() = Mode::Insert;
-
-                                // Redraw
-                                true
-                            }
-                            Command::MoveCursorLeftAndCursorMode => {
-                                self.cursor.as_mut().expect("must have cursor").move_left(
-                                    &mut self.stdout,
-                                    &self.schedule,
-                                    self.schedule_y.unwrap(),
-                                    self.schedule_h.unwrap(),
-                                )?;
-
-                                *self.mode.borrow_mut() = Mode::Cursor;
-                                // Redraw
-                                true
-                            }
+                        let redraw = self.act(&cmd)?;
+                        if self.quit {
+                            break;
                         }
+                        redraw
                     }
                     // No command was found for this key
                     else {
@@ -284,6 +193,135 @@ impl Editor {
         }
 
         Ok(())
+    }
+
+    /// Returns "need full redraw"
+    fn act(&mut self, cmd: &Command) -> Result<bool> {
+        let redraw = match cmd {
+            Command::Quit => {
+                self.quit = true;
+                false
+            }
+            Command::MoveCursor(dir) => {
+                let cursor = self.cursor.as_mut().unwrap();
+                match dir {
+                    super::command::Dir::Up => {
+                        cursor.move_up(
+                            &mut self.stdout,
+                            &self.schedule,
+                            self.schedule_y.unwrap(),
+                            self.schedule_h.unwrap(),
+                        )?;
+                    }
+                    super::command::Dir::Down => {
+                        cursor.move_down(
+                            &mut self.stdout,
+                            &self.schedule,
+                            self.schedule_y.unwrap(),
+                            self.schedule_h.unwrap(),
+                        )?;
+                    }
+                    super::command::Dir::Left => {
+                        cursor.move_left(
+                            &mut self.stdout,
+                            &self.schedule,
+                            self.schedule_y.unwrap(),
+                            self.schedule_h.unwrap(),
+                        )?;
+                    }
+                    super::command::Dir::Right => {
+                        cursor.move_right(
+                            &mut self.stdout,
+                            &self.schedule,
+                            self.schedule_y.unwrap(),
+                            self.schedule_h.unwrap(),
+                        )?;
+                    }
+                };
+                // Redraw
+                false
+            }
+            Command::InsertMode => {
+                *self.mode.borrow_mut() = Mode::Insert;
+                // Redraw
+                true
+            }
+            Command::CursorMode => {
+                *self.mode.borrow_mut() = Mode::Cursor;
+                // Redraw
+                true
+            }
+            Command::TimeMode => {
+                *self.mode.borrow_mut() = Mode::Time;
+                // Redraw
+                true
+            }
+            Command::InsertTimeBoxBelow => {
+                // Insert time box below
+                self.schedule.insert_time_box_below(
+                    self.cursor
+                        .as_mut()
+                        .expect("must have cursor when editing schedule"),
+                    self.schedule_y.expect("schedule must have been rendered"),
+                    self.schedule_h.expect("schedule must have been rendered"),
+                    &mut self.stdout,
+                )?;
+
+                // Redraw
+                true
+            }
+            Command::InsertTimeBoxAbove => {
+                // Insert time box below
+                self.schedule.insert_time_box_above(
+                    self.cursor
+                        .as_mut()
+                        .expect("must have cursor when editing schedule"),
+                    self.schedule_y.expect("schedule must have been rendered"),
+                    self.schedule_h.expect("schedule must have been rendered"),
+                    &mut self.stdout,
+                )?;
+
+                // Redraw
+                true
+            }
+            Command::Multi(commands) => {
+                let mut redraw = false;
+                for cmd in commands.iter() {
+                    if self.act(cmd)? {
+                        redraw = true;
+                    }
+                }
+                redraw
+            }
+            Command::GoToColumn(col_kind) => {
+                let cursor = self.cursor.as_mut().unwrap();
+                let sched_y = self.schedule_y.unwrap();
+                let sched_h = self.schedule_h.unwrap();
+                let cursor_pos = cursor.map_to_content(&self.schedule, sched_y, sched_h);
+                match col_kind {
+                    command::ColumnKind::Index(idx) => cursor.move_to_content(
+                        *idx as u16,
+                        cursor_pos.1 as u16,
+                        &mut self.stdout,
+                        &self.schedule,
+                        sched_y,
+                        sched_h,
+                    )?,
+                    command::ColumnKind::Last => cursor.move_to_content(
+                        self.schedule.0[cursor_pos.1 as usize]
+                            .activity
+                            .summary
+                            .len() as u16,
+                        cursor_pos.1 as u16,
+                        &mut self.stdout,
+                        &self.schedule,
+                        sched_y,
+                        sched_h,
+                    )?,
+                }
+            }
+        };
+        Ok(redraw)
     }
 }
 

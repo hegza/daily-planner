@@ -31,10 +31,17 @@ pub enum Command {
     MoveCursor(Dir),
     InsertMode,
     CursorMode,
-    MoveCursorLeftAndCursorMode,
     TimeMode,
-    InsertTimeBoxBelowAndInsert,
-    InsertTimeBoxAboveAndInsert,
+    InsertTimeBoxBelow,
+    InsertTimeBoxAbove,
+    GoToColumn(ColumnKind),
+    Multi(&'static [Command]),
+}
+
+#[derive(Debug, Clone)]
+pub enum ColumnKind {
+    Index(usize),
+    Last,
 }
 
 #[derive(Debug, Clone)]

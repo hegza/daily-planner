@@ -3,15 +3,21 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use crate::{
     bind, bind_key,
     editor::{
-        command::{Binding, Command, Dir, Filter},
+        command::{Binding, ColumnKind, Command, Dir, Filter},
         editor::Mode,
     },
 };
 
 /*
-    'h', 'l' move cursor (and ghost) horizontal
-    'j', 'k' move cursor vertical, account for horizontal ghost
-    'o' create new empty line below and move cursor to it in insert mode
+    Globals:
+    - ctrl + q: quit
+    Cursor mode:
+    - h, l, left arrow, right arrow: move cursor (and ghost) horizontal
+    - j, k, down arrow, up arrow: move cursor vertical, account for horizontal ghost
+    - i: insert mode
+    - t: time mode
+    - o: create line below and move in insert mode
+
     'g' modifier
         'g' move cursor to begin of file (first column)
         'G' move cursor to end of file (first column)
@@ -31,16 +37,6 @@ pub const BINDINGS: &[Binding] = &[
     ),
     // Cursor mode
     bind_key!(
-        'j',
-        Command::MoveCursor(Dir::Down),
-        Filter::Mode(Mode::Cursor)
-    ),
-    bind_key!(
-        'k',
-        Command::MoveCursor(Dir::Up),
-        Filter::Mode(Mode::Cursor)
-    ),
-    bind_key!(
         'h',
         Command::MoveCursor(Dir::Left),
         Filter::Mode(Mode::Cursor)
@@ -50,8 +46,16 @@ pub const BINDINGS: &[Binding] = &[
         Command::MoveCursor(Dir::Right),
         Filter::Mode(Mode::Cursor)
     ),
-    bind_key!('i', Command::InsertMode, Filter::Mode(Mode::Cursor)),
-    bind_key!('t', Command::TimeMode, Filter::Mode(Mode::Cursor)),
+    bind_key!(
+        'j',
+        Command::MoveCursor(Dir::Down),
+        Filter::Mode(Mode::Cursor)
+    ),
+    bind_key!(
+        'k',
+        Command::MoveCursor(Dir::Up),
+        Filter::Mode(Mode::Cursor)
+    ),
     bind!(
         KeyCode::Down,
         KeyModifiers::NONE,
@@ -76,15 +80,32 @@ pub const BINDINGS: &[Binding] = &[
         Command::MoveCursor(Dir::Right),
         Filter::Mode(Mode::Cursor)
     ),
+    bind_key!('i', Command::InsertMode, Filter::Mode(Mode::Cursor)),
+    bind_key!('t', Command::TimeMode, Filter::Mode(Mode::Cursor)),
     bind_key!(
         'o',
-        Command::InsertTimeBoxBelowAndInsert,
+        Command::Multi(&[Command::InsertTimeBoxBelow, Command::InsertMode]),
         Filter::Mode(Mode::Cursor)
     ),
     bind!(
         KeyCode::Char('O'),
         KeyModifiers::SHIFT,
-        Command::InsertTimeBoxAboveAndInsert,
+        Command::Multi(&[Command::InsertTimeBoxAbove, Command::InsertMode]),
+        Filter::Mode(Mode::Cursor)
+    ),
+    bind!(
+        KeyCode::Char('I'),
+        KeyModifiers::SHIFT,
+        Command::Multi(&[
+            Command::GoToColumn(ColumnKind::Index(0)),
+            Command::InsertMode
+        ]),
+        Filter::Mode(Mode::Cursor)
+    ),
+    bind!(
+        KeyCode::Char('A'),
+        KeyModifiers::SHIFT,
+        Command::Multi(&[Command::GoToColumn(ColumnKind::Last), Command::InsertMode]),
         Filter::Mode(Mode::Cursor)
     ),
     // Time-mode
@@ -99,7 +120,7 @@ pub const BINDINGS: &[Binding] = &[
     bind!(
         KeyCode::Esc,
         KeyModifiers::NONE,
-        Command::MoveCursorLeftAndCursorMode,
+        Command::Multi(&[Command::MoveCursor(Dir::Left), Command::CursorMode]),
         Filter::Mode(Mode::Insert)
     ),
     bind!(
