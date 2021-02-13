@@ -19,6 +19,7 @@ use crossterm::{
 use crate::{
     activity::{timebox::TimeSlotKind, TimeBox},
     schedule::Schedule,
+    time::Duration,
 };
 
 #[derive(Debug)]
@@ -33,6 +34,7 @@ pub struct Editor {
     parent_mode: Mode,
     pub schedule: Rc<RefCell<Schedule>>,
     status_bar: StatusBar,
+    time_cursor: usize,
     clipboard: Option<TimeBox>,
     quit: bool,
 }
@@ -82,6 +84,7 @@ impl Editor {
             parent_mode: Mode::Cursor,
             clipboard: None,
             quit: false,
+            time_cursor: 0,
         }
     }
 
@@ -367,7 +370,7 @@ impl Editor {
                 true
             }
             Command::CutCurrentLine => {
-                let cursor = self.cursor.as_mut().unwrap();
+                let cursor = self.cursor.as_ref().unwrap();
                 let cursor_pos = cursor.map_to_content();
                 let removed = self.schedule.borrow_mut().0.remove(cursor_pos.1 as usize);
 
@@ -377,7 +380,7 @@ impl Editor {
             }
             Command::PasteBelow => {
                 if let Some(content) = self.clipboard.as_ref() {
-                    let cursor = self.cursor.as_mut().unwrap();
+                    let cursor = self.cursor.as_ref().unwrap();
                     let cursor_pos = cursor.map_to_content();
 
                     let sched: &mut Schedule = &mut self.schedule.borrow_mut();
@@ -400,6 +403,45 @@ impl Editor {
                 } else {
                     false
                 }
+            }
+            Command::AdjustTime { hours, minutes } => {
+                let cursor = self.cursor.as_ref().unwrap();
+                let cursor_line = cursor.map_to_line();
+
+                let schedule: &mut Schedule = &mut self.schedule.borrow_mut();
+
+                let duration = Duration::hm(*hours, *minutes);
+
+                for (idx, time_box) in schedule.0[cursor_line..].iter_mut().enumerate() {
+                    if let Some(time) = &mut time_box.time {
+                        match time {
+                            TimeSlotKind::Time(t) => t.adjust(&duration),
+                            TimeSlotKind::Span(start, end) => {
+                                // Use time cursor for the current, but not the rest
+                                if idx == 0 {
+                                    if self.time_cursor == 0 {
+                                        start.adjust(&duration);
+                                        end.adjust(&duration)
+                                    } else {
+                                        end.adjust(&duration);
+                                    };
+                                } else {
+                                    start.adjust(&duration);
+                                    end.adjust(&duration);
+                                };
+                            }
+                        };
+                    }
+                }
+                true
+            }
+            Command::MoveTimeCursor => {
+                if self.time_cursor == 0 {
+                    self.time_cursor = 1;
+                } else {
+                    self.time_cursor = 0;
+                }
+                false
             }
         };
         Ok(redraw)

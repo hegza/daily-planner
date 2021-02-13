@@ -38,7 +38,7 @@ impl<'a, 'b> Sub<&'b Time> for &'a Time {
 
         let hours = diff_min / 60;
         let mins = diff_min - hours * 60;
-        Duration::hm(hours as u8, mins as u8)
+        Duration::hm(hours as i8, mins as i8)
     }
 }
 

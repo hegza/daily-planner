@@ -1,11 +1,6 @@
 mod math;
 
-use chrono::{NaiveTime, Timelike};
-use std::{
-    fmt,
-    ops::{Add, AddAssign, Sub, SubAssign},
-    str::FromStr,
-};
+use std::{fmt, str::FromStr};
 
 use crate::template::template::TimeTemplate;
 
@@ -19,6 +14,10 @@ pub struct Time {
 impl Time {
     pub fn hm(hour: u8, min: u8) -> Time {
         Time { hour, min }
+    }
+
+    pub fn adjust(&mut self, duration: &Duration) {
+        *self += duration;
     }
 
     pub fn round_to_quarter(mut self) -> Time {
@@ -76,10 +75,10 @@ fn time_rounding() {
 pub struct Duration(chrono::Duration);
 
 impl Duration {
-    pub fn hours(hours: u8) -> Duration {
+    pub fn hours(hours: i8) -> Duration {
         Duration(chrono::Duration::hours(hours.into()))
     }
-    pub fn hm(hours: u8, minutes: u8) -> Duration {
+    pub fn hm(hours: i8, minutes: i8) -> Duration {
         Duration(chrono::Duration::minutes(
             hours as i64 * 60 + minutes as i64,
         ))
@@ -104,7 +103,7 @@ impl From<Duration> for Time {
 
 impl From<Time> for Duration {
     fn from(time: Time) -> Self {
-        Duration::hm(time.hour, time.min)
+        Duration::hm(time.hour as i8, time.min as i8)
     }
 }
 
@@ -150,7 +149,7 @@ impl From<Clock> for Time {
 
 impl From<Clock> for Duration {
     fn from(c: Clock) -> Self {
-        Duration::hm(c.hour, c.min)
+        Duration::hm(c.hour as i8, c.min as i8)
     }
 }
 

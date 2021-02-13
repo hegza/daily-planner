@@ -1,6 +1,6 @@
 use crossterm::event::KeyEvent;
 
-use crate::keys::BINDINGS;
+use crate::{keys::BINDINGS, time::Duration};
 
 use super::{editor::Mode, Editor};
 
@@ -38,6 +38,8 @@ pub enum Command {
     InsertTimeBoxAbove,
     PasteAbove,
     PasteBelow,
+    MoveTimeCursor,
+    AdjustTime { hours: i8, minutes: i8 },
     GoToColumn(ColumnKind),
     CutCurrentLine,
     Multi(&'static [Command]),

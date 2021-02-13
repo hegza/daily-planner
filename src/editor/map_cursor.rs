@@ -32,17 +32,11 @@ impl Schedule {
         render_y: u16,
         render_height: u16,
     ) -> Option<(u16, u16)> {
-        let line_idx = match cursor_y.checked_sub(render_y) {
-            Some(idx) => {
-                if idx >= render_height {
-                    // Out-of-bounds, content is above
-                    return None;
-                }
-                idx as usize
-            }
-            // Out-of-bounds, content is below
+        let line_idx = match self.map_cursor_to_line(cursor_y, render_y, render_height) {
+            Some(idx) => idx,
             None => return None,
         };
+
         // Content == the summary of the activity
         let content_on_line = &self.0[line_idx].activity.summary;
 
@@ -60,5 +54,27 @@ impl Schedule {
         };
 
         Some((char_idx as u16, line_idx as u16))
+    }
+
+    /// Maps cursor to line 0 being the topmost line, None on OOB.
+    pub fn map_cursor_to_line(
+        &self,
+        cursor_y: u16,
+        render_y: u16,
+        render_height: u16,
+    ) -> Option<usize> {
+        let line_idx = match cursor_y.checked_sub(render_y) {
+            Some(idx) => {
+                if idx >= render_height {
+                    // Out-of-bounds, content is above
+                    return None;
+                }
+                idx as usize
+            }
+            // Out-of-bounds, content is below
+            None => return None,
+        };
+
+        Some(line_idx)
     }
 }

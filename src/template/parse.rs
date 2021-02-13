@@ -189,7 +189,7 @@ impl FromStr for TimeTemplate {
         // TODO: more involved format detection logic
         let hours = if hours_token == "%H" {
             Ok(None)
-        } else if let Ok(int) = hours_token.parse::<u8>() {
+        } else if let Ok(int) = hours_token.parse::<i8>() {
             Ok(Some(int))
         } else {
             Err(ParseError::CantParseTime(s.to_owned()))
@@ -197,7 +197,7 @@ impl FromStr for TimeTemplate {
 
         let minutes = if minutes_token == "%M" {
             Ok(None)
-        } else if let Ok(int) = minutes_token.parse::<u8>() {
+        } else if let Ok(int) = minutes_token.parse::<i8>() {
             Ok(Some(int))
         } else {
             Err(ParseError::CantParseTime(s.to_owned()))

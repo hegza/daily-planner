@@ -65,6 +65,18 @@ impl ContentCursor {
         (x as usize, y as usize)
     }
 
+    /// This method may panic, if called for an invalid content cursor
+    pub fn map_to_line(&self) -> usize {
+        let y = *self.schedule_y.borrow();
+        let h = *self.schedule_h.borrow();
+        let y = self
+            .schedule
+            .borrow()
+            .map_cursor_to_line(self.vpos, y, h)
+            .expect("failed to map cursor to content");
+        y as usize
+    }
+
     pub fn redraw(&self) -> Result<()> {
         Self::move_terminal_cursor(self.hpos, self.vpos, &mut self.stdout.borrow_mut())
     }

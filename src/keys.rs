@@ -1,3 +1,4 @@
+use crate::Duration;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{
@@ -30,6 +31,8 @@ use crate::{
 
     Time mode:
     - i: insert mode
+    - h, l, left arrow, right arrow: adjust time by 1 hour
+    - j, l, up arrow, down arrow: adjust time by 15 minutes
     - Esc: cursor mode
 
     Insert mode:
@@ -151,6 +154,39 @@ pub const BINDINGS: &[Binding] = &[
     ),
     // Time-mode
     bind_key!('i', Command::InsertMode, Filter::Mode(Mode::Time)),
+    bind_key!('t', Command::MoveTimeCursor, Filter::Mode(Mode::Time)),
+    bind_key!(
+        'h',
+        Command::AdjustTime {
+            hours: -1,
+            minutes: 0
+        },
+        Filter::Mode(Mode::Time)
+    ),
+    bind_key!(
+        'l',
+        Command::AdjustTime {
+            hours: 1,
+            minutes: 0
+        },
+        Filter::Mode(Mode::Time)
+    ),
+    bind_key!(
+        'j',
+        Command::AdjustTime {
+            hours: 0,
+            minutes: 15
+        },
+        Filter::Mode(Mode::Time)
+    ),
+    bind_key!(
+        'k',
+        Command::AdjustTime {
+            hours: 0,
+            minutes: -15
+        },
+        Filter::Mode(Mode::Time)
+    ),
     bind!(
         KeyCode::Esc,
         KeyModifiers::NONE,
