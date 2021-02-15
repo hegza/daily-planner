@@ -10,10 +10,15 @@ use crate::{
 
 impl Schedule {
     /// Returns true if something was changed
-    pub fn edit_content(&mut self, key: &KeyEvent, cursor: &mut ContentCursor) -> Result<bool> {
+    pub fn edit_content(
+        &mut self,
+        key: &KeyEvent,
+        cursor: &mut ContentCursor,
+        stdout: &mut Stdout,
+    ) -> Result<bool> {
         let KeyEvent { code, modifiers } = key;
 
-        let pos = cursor.map_to_content();
+        let pos = cursor.map_to_content(&self);
 
         let edit_text = &mut self.0[pos.1].activity.summary;
         let char_idx = pos.0;
@@ -47,7 +52,7 @@ impl Schedule {
                 let n_text = format!("{}{}{}", start, c, end);
                 *edit_text = n_text;
                 */
-                cursor.move_right()?;
+                cursor.move_right(&self, stdout)?;
                 true
             }
             // Remove the character to the left of cursor, then move cursor left
@@ -57,7 +62,7 @@ impl Schedule {
                     edit_text.remove(remove);
 
                     // Move cursor left
-                    cursor.move_left()?;
+                    cursor.move_left(&self, stdout)?;
 
                     true
                 } else {

@@ -24,15 +24,15 @@ use crate::{
 
 #[derive(Debug)]
 pub struct Editor {
-    stdout: Rc<RefCell<Stdout>>,
+    stdout: Stdout,
     cursor: Option<ContentCursor>,
     /// The y-position of the cursor was when the schedule started to render
-    schedule_y: Option<Rc<RefCell<u16>>>,
+    schedule_y: Rc<RefCell<u16>>,
     /// The height of the schedule when rendered, based on cursor y-position when the schedule stopped rendering
-    schedule_h: Option<Rc<RefCell<u16>>>,
+    schedule_h: Rc<RefCell<u16>>,
     pub mode: Rc<RefCell<Mode>>,
     parent_mode: Mode,
-    pub schedule: Rc<RefCell<Schedule>>,
+    pub schedule: Schedule,
     status_bar: StatusBar,
     time_cursor: usize,
     clipboard: Option<TimeBox>,
@@ -67,15 +67,15 @@ impl Mode {
 
 impl Editor {
     pub fn with_stdout(stdout: Stdout, schedule: Schedule) -> Editor {
-        let stdout = Rc::new(RefCell::new(stdout));
-        let schedule = Rc::new(RefCell::new(schedule));
         let mode = Rc::new(RefCell::new(Mode::Cursor));
 
+        let schedule_y = Rc::new(RefCell::new(0));
+        let schedule_h = Rc::new(RefCell::new(0));
         Editor {
             stdout,
             schedule,
-            schedule_y: None,
-            schedule_h: None,
+            schedule_y,
+            schedule_h,
             cursor: None,
             status_bar: StatusBar {
                 mode: Rc::downgrade(&mode),
@@ -93,20 +93,13 @@ impl Editor {
         self.render()?;
 
         // Create cursor at top-left
-        let y = self
-            .schedule_y
-            .as_ref()
-            .expect("schedule position on screen must be known")
-            .clone();
-        self.cursor = Some(ContentCursor::init(
-            y,
-            self.schedule_h
-                .as_ref()
-                .expect("schedule position on screen must be known")
-                .clone(),
-            self.stdout.clone(),
-            self.schedule.clone(),
-        ));
+        let cursor = ContentCursor::init(
+            self.schedule_y.clone(),
+            self.schedule_h.clone(),
+            &mut self.stdout,
+            &self.schedule,
+        );
+        self.cursor = Some(cursor);
 
         // Detect keys until exit
         self.loop_input()
@@ -116,7 +109,7 @@ impl Editor {
     fn render(&mut self) -> Result<()> {
         {
             // Rename binding, we all know what stdout is
-            let stdout = &mut (*self.stdout).borrow_mut();
+            let stdout = &mut self.stdout;
 
             // Clear screen and move cursor to top-left
             stdout
@@ -126,14 +119,13 @@ impl Editor {
 
             // Render schedule while measuring it's height
             let y = cursor::position()?.1;
-            self.schedule_y.replace(Rc::new(RefCell::new(y)));
-            (*self.schedule).borrow_mut().render(stdout)?;
-            self.schedule_h
-                .replace(Rc::new(RefCell::new(cursor::position()?.1 - y)));
+            self.schedule_y.replace(y);
+            self.schedule.render(stdout)?;
+            let h = cursor::position()?.1 - y;
+            self.schedule_h.replace(h);
 
             if let Some(last_timed_item) = self
                 .schedule
-                .borrow()
                 .0
                 .iter()
                 .rev()
@@ -141,7 +133,6 @@ impl Editor {
             {
                 let first_timed_item = self
                     .schedule
-                    .borrow()
                     .0
                     .iter()
                     .find_map(|time_box| time_box.time.clone())
@@ -173,8 +164,8 @@ impl Editor {
             stdout.flush()?;
         }
 
-        if let Some(cursor) = self.cursor.as_ref() {
-            cursor.redraw()?;
+        if let Some(cursor) = self.cursor.as_mut() {
+            cursor.redraw(&mut self.stdout)?;
         }
 
         Ok(())
@@ -207,13 +198,13 @@ impl Editor {
                     else {
                         // Insert mode: make edits to the schedule data-structure
                         if *self.mode.borrow() == Mode::Insert {
-                            let schedule = &mut self.schedule.borrow_mut();
-                            let redraw = schedule.edit_content(
-                                &key_ev,
-                                self.cursor
-                                    .as_mut()
-                                    .expect("must have cursor when editing schedule"),
-                            )?;
+                            let cursor = self
+                                .cursor
+                                .as_mut()
+                                .expect("must have cursor when editing schedule");
+                            let schedule = &mut self.schedule;
+                            let redraw =
+                                schedule.edit_content(&key_ev, cursor, &mut self.stdout)?;
                             redraw
                         } else {
                             // redraw
@@ -253,16 +244,16 @@ impl Editor {
                 match dir {
                     command::MoveCursor::Dir(dir) => match dir {
                         command::Dir::Up => {
-                            cursor.move_up()?;
+                            cursor.move_up(&self.schedule, &mut self.stdout)?;
                         }
                         command::Dir::Down => {
-                            cursor.move_down()?;
+                            cursor.move_down(&self.schedule, &mut self.stdout)?;
                         }
                         command::Dir::Left => {
-                            cursor.move_left()?;
+                            cursor.move_left(&self.schedule, &mut self.stdout)?;
                         }
                         command::Dir::Right => {
-                            cursor.move_right()?;
+                            cursor.move_right(&self.schedule, &mut self.stdout)?;
                         }
                     },
                     command::MoveCursor::Top => unimplemented!(),
@@ -302,17 +293,19 @@ impl Editor {
                     .as_ref()
                     .expect("must have cursor when editing schedule");
 
-                let pos = cursor.map_to_content();
+                let pos = cursor.map_to_content(&self.schedule);
                 let cursor_line = pos.1 + 1;
 
-                self.schedule.borrow_mut().insert_time_box(cursor_line)?;
+                self.schedule.insert_time_box(cursor_line)?;
+                // HACK: Increase height to allow cursor to move right
+                *self.schedule_h.borrow_mut() += 1;
 
                 // Move one down and to the beginning
-                let pos = cursor.map_to_content();
+                let pos = cursor.map_to_content(&self.schedule);
                 self.cursor
                     .as_mut()
                     .expect("must have cursor")
-                    .move_to_content(0, pos.1 as u16 + 1)?;
+                    .move_to_content(0, pos.1 as u16 + 1, &self.schedule, &mut self.stdout)?;
 
                 // Redraw
                 true
@@ -324,17 +317,17 @@ impl Editor {
                     .as_ref()
                     .expect("must have cursor when editing schedule");
 
-                let pos = cursor.map_to_content();
+                let pos = cursor.map_to_content(&self.schedule);
                 let cursor_line = pos.1;
 
-                self.schedule.borrow_mut().insert_time_box(cursor_line)?;
+                self.schedule.insert_time_box(cursor_line)?;
 
                 // Move one up and to the beginning
-                let pos = cursor.map_to_content();
+                let pos = cursor.map_to_content(&self.schedule);
                 self.cursor
                     .as_mut()
                     .expect("must have cursor")
-                    .move_to_content(0, pos.1 as u16)?;
+                    .move_to_content(0, pos.1 as u16, &self.schedule, &mut self.stdout)?;
 
                 // Redraw
                 true
@@ -350,18 +343,26 @@ impl Editor {
             }
             Command::GoToColumn(col_kind) => {
                 let cursor = self.cursor.as_mut().unwrap();
-                let cursor_pos = cursor.map_to_content();
+                let cursor_pos = cursor.map_to_content(&self.schedule);
 
                 match col_kind {
-                    command::ColumnKind::Index(idx) => {
-                        cursor.move_to_content(*idx as u16, cursor_pos.1 as u16)?
-                    }
+                    command::ColumnKind::Index(idx) => cursor.move_to_content(
+                        *idx as u16,
+                        cursor_pos.1 as u16,
+                        &self.schedule,
+                        &mut self.stdout,
+                    )?,
                     command::ColumnKind::Last => {
-                        let x = self.schedule.borrow_mut().0[cursor_pos.1 as usize]
+                        let x = self.schedule.0[cursor_pos.1 as usize]
                             .activity
                             .summary
                             .len() as u16;
-                        cursor.move_to_content(x, cursor_pos.1 as u16)?
+                        cursor.move_to_content(
+                            x,
+                            cursor_pos.1 as u16,
+                            &self.schedule,
+                            &mut self.stdout,
+                        )?
                     }
                 }
             }
@@ -371,8 +372,8 @@ impl Editor {
             }
             Command::CutCurrentLine => {
                 let cursor = self.cursor.as_ref().unwrap();
-                let cursor_pos = cursor.map_to_content();
-                let removed = self.schedule.borrow_mut().0.remove(cursor_pos.1 as usize);
+                let cursor_pos = cursor.map_to_content(&self.schedule);
+                let removed = self.schedule.0.remove(cursor_pos.1 as usize);
 
                 self.clipboard = Some(removed);
 
@@ -381,9 +382,9 @@ impl Editor {
             Command::PasteBelow => {
                 if let Some(content) = self.clipboard.as_ref() {
                     let cursor = self.cursor.as_ref().unwrap();
-                    let cursor_pos = cursor.map_to_content();
+                    let cursor_pos = cursor.map_to_content(&self.schedule);
 
-                    let sched: &mut Schedule = &mut self.schedule.borrow_mut();
+                    let sched: &mut Schedule = &mut self.schedule;
                     sched.0.insert(cursor_pos.1 as usize + 1, content.clone());
                     true
                 } else {
@@ -393,10 +394,9 @@ impl Editor {
             Command::PasteAbove => {
                 if let Some(content) = self.clipboard.as_ref() {
                     let cursor = self.cursor.as_mut().unwrap();
-                    let cursor_pos = cursor.map_to_content();
+                    let cursor_pos = cursor.map_to_content(&self.schedule);
 
                     self.schedule
-                        .borrow_mut()
                         .0
                         .insert(cursor_pos.1 as usize, content.clone());
                     true
@@ -406,9 +406,9 @@ impl Editor {
             }
             Command::AdjustTime { hours, minutes } => {
                 let cursor = self.cursor.as_ref().unwrap();
-                let cursor_line = cursor.map_to_line();
+                let cursor_line = cursor.map_to_line(&self.schedule);
 
-                let schedule: &mut Schedule = &mut self.schedule.borrow_mut();
+                let schedule: &mut Schedule = &mut self.schedule;
 
                 let duration = Duration::hm(*hours, *minutes);
 
