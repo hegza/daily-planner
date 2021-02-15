@@ -522,6 +522,15 @@ impl Editor {
                 line.done = !line.done;
                 true
             }
+            Command::SwapTimeSubMode => {
+                let mut time_mode_ref = self.time_mode.borrow_mut();
+                let time_mode: &TimeMode = &time_mode_ref;
+                match time_mode {
+                    TimeMode::Relative => *time_mode_ref = TimeMode::Absolute,
+                    TimeMode::Absolute => *time_mode_ref = TimeMode::Relative,
+                }
+                true
+            }
         };
         Ok(redraw)
     }

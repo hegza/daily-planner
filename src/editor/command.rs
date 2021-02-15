@@ -40,6 +40,7 @@ pub enum Command {
     PasteAbove,
     PasteBelow,
     MoveTimeCursor,
+    SwapTimeSubMode,
     AdjustTime { hours: i8, minutes: i8 },
     DeleteTime,
     GoToColumn(ColumnKind),
