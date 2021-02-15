@@ -8,6 +8,7 @@ use crate::{time::Duration, Time};
 pub struct TimeBox {
     pub time: Option<TimeSlotKind>,
     pub activity: Activity,
+    pub done: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -33,6 +34,7 @@ impl Default for TimeBox {
         TimeBox {
             time: None,
             activity: Activity::default(),
+            done: false,
         }
     }
 }

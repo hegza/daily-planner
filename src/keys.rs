@@ -52,6 +52,12 @@ pub const BINDINGS: &[Binding] = &[
         Command::Quit,
         Filter::Global
     ),
+    bind!(
+        KeyCode::Char('a'),
+        KeyModifiers::CONTROL,
+        Command::ToggleCrossOver,
+        Filter::Global
+    ),
     // Cursor mode
     bind_key!(
         'h',

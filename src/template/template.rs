@@ -103,6 +103,10 @@ impl TimeBoxTemplate {
 
         let activity = self.activity.clone();
 
-        TimeBox { time, activity }
+        TimeBox {
+            time,
+            activity,
+            ..Default::default()
+        }
     }
 }

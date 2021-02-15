@@ -36,6 +36,7 @@ pub enum Command {
     DeleteMode,
     InsertTimeBoxBelow,
     InsertTimeBoxAbove,
+    ToggleCrossOver,
     PasteAbove,
     PasteBelow,
     MoveTimeCursor,

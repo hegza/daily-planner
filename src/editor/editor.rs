@@ -515,6 +515,13 @@ impl Editor {
                     .time = None;
                 true
             }
+            Command::ToggleCrossOver => {
+                let line = self
+                    .schedule
+                    .mut_line(&self.cursor.as_ref().expect("must have cursor"));
+                line.done = !line.done;
+                true
+            }
         };
         Ok(redraw)
     }

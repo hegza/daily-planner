@@ -25,10 +25,18 @@ impl Render for Schedule {
             vars.insert("activity".to_owned(), format!("{}", time_box.activity));
             let content = strfmt(&fmt, &vars)?;
 
+            if time_box.done {
+                stdout.queue(style::SetAttribute(style::Attribute::CrossedOut))?;
+            }
+
             let styled = style(content);
             stdout
                 .queue(style::PrintStyledContent(styled))?
                 .queue(cursor::MoveToNextLine(1))?;
+
+            if time_box.done {
+                stdout.queue(style::SetAttribute(style::Attribute::NotCrossedOut))?;
+            }
         }
         stdout.flush()?;
 
