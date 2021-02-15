@@ -297,7 +297,7 @@ impl Editor {
                 let cursor_line = pos.1 + 1;
 
                 self.schedule.insert_time_box(cursor_line)?;
-                // HACK: Increase height to allow cursor to move right
+                // HACK: Increase height to allow cursor to move correct
                 *self.schedule_h.borrow_mut() += 1;
 
                 // Move one down and to the beginning
@@ -371,9 +371,19 @@ impl Editor {
                 true
             }
             Command::CutCurrentLine => {
+                // Move first to avoid getting stuck outside of the editor area
+                let cur = self.cursor.as_mut().expect("must have cursor");
+                if !cur.move_up(&self.schedule, &mut self.stdout)? {
+                    // On failure, move to first column...
+                    cur.move_to_column(0, &self.schedule, &mut self.stdout)?;
+                    // ... then try again
+                    cur.move_up(&self.schedule, &mut self.stdout)?;
+                }
+
                 let cursor = self.cursor.as_ref().unwrap();
-                let cursor_pos = cursor.map_to_content(&self.schedule);
-                let removed = self.schedule.0.remove(cursor_pos.1 as usize);
+                let cursor_line = cursor.map_to_line(&self.schedule) + 1 /* +1 because we moved the cursor */;
+
+                let removed = self.schedule.0.remove(cursor_line as usize);
 
                 self.clipboard = Some(removed);
 

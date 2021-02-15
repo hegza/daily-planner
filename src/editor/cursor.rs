@@ -142,6 +142,18 @@ impl ContentCursor {
         self.move_to_content(n_mapped_x, n_mapped_y, schedule, stdout)
     }
 
+    /// Move to content column
+    pub fn move_to_column(
+        &mut self,
+        idx: usize,
+        schedule: &Schedule,
+        stdout: &mut Stdout,
+    ) -> Result<bool> {
+        let cursor_line = self.map_to_line(schedule);
+
+        self.move_to_content(idx as u16, cursor_line as u16, schedule, stdout)
+    }
+
     pub fn move_to_content(
         &mut self,
         content_x: u16,

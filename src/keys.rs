@@ -1,4 +1,3 @@
-use crate::Duration;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{
