@@ -13,7 +13,7 @@ use strfmt::strfmt;
 
 impl Render for Schedule {
     fn render(&self, stdout: &mut Stdout) -> crate::editor::Result<()> {
-        for time_box in self.0.iter() {
+        for time_box in self.timeboxes.iter() {
             let t_str = match &time_box.time {
                 Some(t) => format!("{}", t),
                 None => "     ".to_owned(),
@@ -38,7 +38,7 @@ impl Render for Schedule {
 
 impl Schedule {
     pub fn time_col_width(&self) -> usize {
-        self.0
+        self.timeboxes
             .iter()
             .filter_map(|x| x.time.as_ref())
             .map(|x| format!("{}", x).len())

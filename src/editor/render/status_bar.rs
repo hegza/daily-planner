@@ -6,7 +6,7 @@ use crossterm::{
     QueueableCommand,
 };
 
-use crate::editor::editor::{Mode, StatusBar};
+use crate::editor::editor::{Mode, StatusBar, TimeMode};
 
 use super::Render;
 
@@ -18,7 +18,15 @@ impl Render for StatusBar {
         let mode_str = match mode {
             Mode::Cursor => "",
             Mode::Insert => "-- INSERT --",
-            Mode::Time => "-- ADJUST TIME --",
+            Mode::Time => {
+                let time_mode = self.time_mode.upgrade().unwrap();
+                let time_mode: &RefCell<TimeMode> = &time_mode.borrow();
+                let time_mode: &TimeMode = &time_mode.borrow();
+                match time_mode {
+                    TimeMode::Relative => "-- ADJUST TIME (relative) --",
+                    TimeMode::Absolute => "-- ADJUST TIME (absolute) --",
+                }
+            }
             Mode::GoTo => "goto +",
             Mode::Delete => "delete +",
         };

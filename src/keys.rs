@@ -247,4 +247,5 @@ pub const BINDINGS: &[Binding] = &[
         Command::CutCurrentLine,
         Filter::Mode(Mode::Delete)
     ),
+    bind_key!('t', Command::DeleteTime, Filter::Mode(Mode::Delete)),
 ];

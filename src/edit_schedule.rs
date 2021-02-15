@@ -20,7 +20,7 @@ impl Schedule {
 
         let pos = cursor.map_to_content(&self);
 
-        let edit_text = &mut self.0[pos.1].activity.summary;
+        let edit_text = &mut self.timeboxes[pos.1].activity.summary;
         let char_idx = pos.0;
 
         use crossterm::event::KeyCode;
@@ -88,7 +88,7 @@ impl Schedule {
     /// Returns true if something was changed
     pub fn insert_time_box(&mut self, idx: usize) -> Result<bool> {
         // "Insert below"
-        self.0.insert(idx, TimeBox::default());
+        self.timeboxes.insert(idx, TimeBox::default());
 
         Ok(true)
     }

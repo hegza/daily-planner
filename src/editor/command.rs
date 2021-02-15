@@ -40,6 +40,7 @@ pub enum Command {
     PasteBelow,
     MoveTimeCursor,
     AdjustTime { hours: i8, minutes: i8 },
+    DeleteTime,
     GoToColumn(ColumnKind),
     CutCurrentLine,
     Multi(&'static [Command]),

@@ -14,7 +14,7 @@ impl Schedule {
         }
         let out_y = content_y + render_y;
 
-        let content_on_line = &self.0[content_y as usize].activity.summary;
+        let content_on_line = &self.timeboxes[content_y as usize].activity.summary;
         if content_x >= content_on_line.chars().count() as u16 + 1 {
             return None;
         }
@@ -38,7 +38,7 @@ impl Schedule {
         };
 
         // Content == the summary of the activity
-        let content_on_line = &self.0[line_idx].activity.summary;
+        let content_on_line = &self.timeboxes[line_idx].activity.summary;
 
         let char_idx = match (cursor_x as usize).checked_sub(self.time_col_width() + 1) {
             Some(char_idx) => {

@@ -31,6 +31,7 @@ pub struct Editor {
     /// The height of the schedule when rendered, based on cursor y-position when the schedule stopped rendering
     schedule_h: Rc<RefCell<u16>>,
     pub mode: Rc<RefCell<Mode>>,
+    pub time_mode: Rc<RefCell<TimeMode>>,
     parent_mode: Mode,
     pub schedule: Schedule,
     status_bar: StatusBar,
@@ -53,6 +54,12 @@ pub enum Mode {
     Delete,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum TimeMode {
+    Relative,
+    Absolute,
+}
+
 impl Mode {
     fn is_transient(&self) -> bool {
         match self {
@@ -68,6 +75,7 @@ impl Mode {
 impl Editor {
     pub fn with_stdout(stdout: Stdout, schedule: Schedule) -> Editor {
         let mode = Rc::new(RefCell::new(Mode::Cursor));
+        let time_mode = Rc::new(RefCell::new(TimeMode::Relative));
 
         let schedule_y = Rc::new(RefCell::new(0));
         let schedule_h = Rc::new(RefCell::new(0));
@@ -79,8 +87,10 @@ impl Editor {
             cursor: None,
             status_bar: StatusBar {
                 mode: Rc::downgrade(&mode),
+                time_mode: Rc::downgrade(&time_mode),
             },
             mode,
+            time_mode,
             parent_mode: Mode::Cursor,
             clipboard: None,
             quit: false,
@@ -126,14 +136,14 @@ impl Editor {
 
             if let Some(last_timed_item) = self
                 .schedule
-                .0
+                .timeboxes
                 .iter()
                 .rev()
                 .find_map(|time_box| time_box.time.clone())
             {
                 let first_timed_item = self
                     .schedule
-                    .0
+                    .timeboxes
                     .iter()
                     .find_map(|time_box| time_box.time.clone())
                     .unwrap();
@@ -274,6 +284,27 @@ impl Editor {
             }
             Command::TimeMode => {
                 *self.mode.borrow_mut() = Mode::Time;
+
+                // If time mode was entered on something without time, create it + move to absolute mode
+                {
+                    let cursor = self.cursor.as_ref().unwrap();
+                    let cursor_line = cursor.map_to_line(&self.schedule);
+
+                    if self.schedule.timeboxes[cursor_line].time.is_none() {
+                        let prev_time = self.schedule.timeboxes[..cursor_line]
+                            .iter()
+                            .rev()
+                            .find_map(|time_box| time_box.time.clone())
+                            .unwrap_or(TimeSlotKind::Time(self.schedule.wake_up));
+                        self.schedule.mut_line(&cursor).time = Some(prev_time);
+
+                        // ... and use absolute mode
+                        *self.time_mode.borrow_mut() = TimeMode::Absolute;
+                    } else {
+                        *self.time_mode.borrow_mut() = TimeMode::Relative;
+                    }
+                }
+
                 // Redraw
                 true
             }
@@ -353,7 +384,7 @@ impl Editor {
                         &mut self.stdout,
                     )?,
                     command::ColumnKind::Last => {
-                        let x = self.schedule.0[cursor_pos.1 as usize]
+                        let x = self.schedule.timeboxes[cursor_pos.1 as usize]
                             .activity
                             .summary
                             .len() as u16;
@@ -383,7 +414,7 @@ impl Editor {
                 let cursor = self.cursor.as_ref().unwrap();
                 let cursor_line = cursor.map_to_line(&self.schedule) + 1 /* +1 because we moved the cursor */;
 
-                let removed = self.schedule.0.remove(cursor_line as usize);
+                let removed = self.schedule.timeboxes.remove(cursor_line as usize);
 
                 self.clipboard = Some(removed);
 
@@ -395,7 +426,9 @@ impl Editor {
                     let cursor_pos = cursor.map_to_content(&self.schedule);
 
                     let sched: &mut Schedule = &mut self.schedule;
-                    sched.0.insert(cursor_pos.1 as usize + 1, content.clone());
+                    sched
+                        .timeboxes
+                        .insert(cursor_pos.1 as usize + 1, content.clone());
                     true
                 } else {
                     false
@@ -407,7 +440,7 @@ impl Editor {
                     let cursor_pos = cursor.map_to_content(&self.schedule);
 
                     self.schedule
-                        .0
+                        .timeboxes
                         .insert(cursor_pos.1 as usize, content.clone());
                     true
                 } else {
@@ -418,31 +451,54 @@ impl Editor {
                 let cursor = self.cursor.as_ref().unwrap();
                 let cursor_line = cursor.map_to_line(&self.schedule);
 
-                let schedule: &mut Schedule = &mut self.schedule;
-
                 let duration = Duration::hm(*hours, *minutes);
 
-                for (idx, time_box) in schedule.0[cursor_line..].iter_mut().enumerate() {
-                    if let Some(time) = &mut time_box.time {
-                        match time {
-                            TimeSlotKind::Time(t) => t.adjust(&duration),
-                            TimeSlotKind::Span(start, end) => {
-                                // Use time cursor for the current, but not the rest
-                                if idx == 0 {
+                match *self.time_mode.borrow() {
+                    TimeMode::Relative => {
+                        let schedule: &mut Schedule = &mut self.schedule;
+
+                        for (idx, time_box) in
+                            schedule.timeboxes[cursor_line..].iter_mut().enumerate()
+                        {
+                            if let Some(time) = &mut time_box.time {
+                                match time {
+                                    TimeSlotKind::Time(t) => t.adjust(&duration),
+                                    TimeSlotKind::Span(start, end) => {
+                                        // Use time cursor for the current, but not the rest
+                                        if idx == 0 {
+                                            if self.time_cursor == 0 {
+                                                start.adjust(&duration);
+                                                end.adjust(&duration)
+                                            } else {
+                                                end.adjust(&duration);
+                                            };
+                                        } else {
+                                            start.adjust(&duration);
+                                            end.adjust(&duration);
+                                        };
+                                    }
+                                };
+                            }
+                        }
+                    }
+                    TimeMode::Absolute => {
+                        let timebox = &mut self.schedule.timeboxes[cursor_line];
+                        if let Some(time) = &mut timebox.time {
+                            match time {
+                                TimeSlotKind::Time(t) => t.adjust(&duration),
+                                TimeSlotKind::Span(start, end) => {
                                     if self.time_cursor == 0 {
                                         start.adjust(&duration);
                                         end.adjust(&duration)
                                     } else {
                                         end.adjust(&duration);
                                     };
-                                } else {
-                                    start.adjust(&duration);
-                                    end.adjust(&duration);
-                                };
-                            }
-                        };
+                                }
+                            };
+                        }
                     }
                 }
+
                 true
             }
             Command::MoveTimeCursor => {
@@ -453,6 +509,12 @@ impl Editor {
                 }
                 false
             }
+            Command::DeleteTime => {
+                self.schedule
+                    .mut_line(self.cursor.as_ref().expect("must have cursor"))
+                    .time = None;
+                true
+            }
         };
         Ok(redraw)
     }
@@ -461,4 +523,5 @@ impl Editor {
 #[derive(Debug)]
 pub struct StatusBar {
     pub mode: Weak<RefCell<Mode>>,
+    pub time_mode: Weak<RefCell<TimeMode>>,
 }

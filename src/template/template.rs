@@ -48,7 +48,10 @@ impl Template {
             .map(|time_box_template| time_box_template.time_box(&mut time, &meta.span_len))
             .collect();
 
-        Schedule(timeboxes)
+        Schedule {
+            timeboxes,
+            wake_up: meta.wake_up,
+        }
     }
 }
 
