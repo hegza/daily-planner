@@ -1,6 +1,6 @@
 use crossterm::event::KeyEvent;
 
-use crate::{keys::BINDINGS, time::Duration};
+use crate::keys::BINDINGS;
 
 use super::{editor::Mode, Editor};
 

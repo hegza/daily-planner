@@ -1,7 +1,7 @@
 use std::fmt;
 
 use super::Activity;
-use crate::{time::Duration, Clock, Time};
+use crate::{time::Duration, Time};
 
 /// A time box with a set activity and possibly a time slot.
 #[derive(Clone, Debug)]

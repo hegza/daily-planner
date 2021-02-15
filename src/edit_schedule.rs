@@ -1,4 +1,4 @@
-use std::{char::decode_utf16, io::Stdout, iter};
+use std::io::Stdout;
 
 use crossterm::event::{KeyEvent, KeyModifiers};
 
