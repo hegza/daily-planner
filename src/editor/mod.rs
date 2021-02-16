@@ -1,9 +1,9 @@
 mod api;
 pub mod command;
 pub mod cursor;
+mod cursor_pos;
 pub mod editor;
 mod error;
-mod map_cursor;
 mod render;
 
 pub use api::EditorLike;

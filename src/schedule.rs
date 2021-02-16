@@ -9,7 +9,7 @@ pub struct Schedule {
 
 impl Schedule {
     pub fn mut_line(&mut self, cursor: &ContentCursor) -> &mut TimeBox {
-        let line = cursor.map_to_line(self);
+        let line = cursor.map_to_line();
         &mut self.timeboxes[line]
     }
 }

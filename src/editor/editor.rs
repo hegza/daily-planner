@@ -288,7 +288,7 @@ impl Editor {
                 // If time mode was entered on something without time, create it + move to absolute mode
                 {
                     let cursor = self.cursor.as_ref().unwrap();
-                    let cursor_line = cursor.map_to_line(&self.schedule);
+                    let cursor_line = cursor.map_to_line();
 
                     if self.schedule.timeboxes[cursor_line].time.is_none() {
                         let prev_time = self.schedule.timeboxes[..cursor_line]
@@ -414,7 +414,7 @@ impl Editor {
                 }
 
                 let cursor = self.cursor.as_ref().unwrap();
-                let cursor_line = cursor.map_to_line(&self.schedule) + 1 /* +1 because we moved the cursor */;
+                let cursor_line = cursor.map_to_line() + 1 /* +1 because we moved the cursor */;
 
                 let removed = self.schedule.timeboxes.remove(cursor_line as usize);
 
@@ -451,7 +451,7 @@ impl Editor {
             }
             Command::AdjustTime { hours, minutes } => {
                 let cursor = self.cursor.as_ref().unwrap();
-                let cursor_line = cursor.map_to_line(&self.schedule);
+                let cursor_line = cursor.map_to_line();
 
                 let duration = Duration::hm(*hours, *minutes);
 
