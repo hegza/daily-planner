@@ -20,8 +20,8 @@ impl Schedule {
 
         let pos = cursor.map_to_content(&self);
 
-        let edit_text = &mut self.timeboxes[pos.1].activity.summary;
-        let char_idx = pos.0;
+        let edit_text = &mut self.timeboxes[pos.line].activity.summary;
+        let char_idx = pos.col;
 
         use crossterm::event::KeyCode;
         let redraw = match code {

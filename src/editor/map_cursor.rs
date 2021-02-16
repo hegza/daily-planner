@@ -1,38 +1,37 @@
+use super::cursor::{MappedPos, TerminalPos};
 use crate::schedule::Schedule;
 
 impl Schedule {
     /// Maps content to cursor (0, 0) being the first character on the first item of the day at e.g. position (13, 0). Returns None on out-of-bounds.
     pub fn map_content_to_screen(
         &self,
-        content_x: u16,
-        content_y: u16,
+        pos: &MappedPos,
         render_y: u16,
         render_height: u16,
-    ) -> Option<(u16, u16)> {
-        if content_y >= render_height {
+    ) -> Option<TerminalPos> {
+        if pos.line as u16 >= render_height {
             return None;
         }
-        let out_y = content_y + render_y;
+        let out_y = pos.line as u16 + render_y;
 
-        let content_on_line = &self.timeboxes[content_y as usize].activity.summary;
-        if content_x >= content_on_line.chars().count() as u16 + 1 {
+        let content_on_line = &self.timeboxes[pos.line].activity.summary;
+        if pos.col >= content_on_line.chars().count() + 1 {
             return None;
         }
 
-        let out_x = content_x + self.time_col_width() as u16 + 1;
+        let out_x = pos.col as u16 + self.time_col_width() as u16 + 1;
 
-        Some((out_x, out_y))
+        Some(TerminalPos::new(out_x, out_y))
     }
 
     /// Maps cursor to content (0, 0) being top-left of screen. Returns None on out-of-bounds.
     pub fn map_cursor_to_content(
         &self,
-        cursor_x: u16,
-        cursor_y: u16,
+        cursor: &TerminalPos,
         render_y: u16,
         render_height: u16,
-    ) -> Option<(u16, u16)> {
-        let line_idx = match self.map_cursor_to_line(cursor_y, render_y, render_height) {
+    ) -> Option<MappedPos> {
+        let line_idx = match self.map_cursor_to_line(cursor.vpos, render_y, render_height) {
             Some(idx) => idx,
             None => return None,
         };
@@ -40,7 +39,7 @@ impl Schedule {
         // Content == the summary of the activity
         let content_on_line = &self.timeboxes[line_idx].activity.summary;
 
-        let char_idx = match (cursor_x as usize).checked_sub(self.time_col_width() + 1) {
+        let char_idx = match (cursor.hpos as usize).checked_sub(self.time_col_width() + 1) {
             Some(char_idx) => {
                 if char_idx >= content_on_line.chars().count() + 2 {
                     // Out-of-bounds, content is leftwards
@@ -53,7 +52,7 @@ impl Schedule {
             None => return None,
         };
 
-        Some((char_idx as u16, line_idx as u16))
+        Some(MappedPos::new(char_idx as u16, line_idx as u16))
     }
 
     /// Maps cursor to line 0 being the topmost line, None on OOB.

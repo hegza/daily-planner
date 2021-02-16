@@ -325,7 +325,7 @@ impl Editor {
                     .expect("must have cursor when editing schedule");
 
                 let pos = cursor.map_to_content(&self.schedule);
-                let cursor_line = pos.1 + 1;
+                let cursor_line = pos.line + 1;
 
                 self.schedule.insert_time_box(cursor_line)?;
                 // HACK: Increase height to allow cursor to move correct
@@ -336,7 +336,11 @@ impl Editor {
                 self.cursor
                     .as_mut()
                     .expect("must have cursor")
-                    .move_to_content(0, pos.1 as u16 + 1, &self.schedule, &mut self.stdout)?;
+                    .move_to_content(
+                        &pos.column(0).next_line(),
+                        &self.schedule,
+                        &mut self.stdout,
+                    )?;
 
                 // Redraw
                 true
@@ -349,7 +353,7 @@ impl Editor {
                     .expect("must have cursor when editing schedule");
 
                 let pos = cursor.map_to_content(&self.schedule);
-                let cursor_line = pos.1;
+                let cursor_line = pos.line;
 
                 self.schedule.insert_time_box(cursor_line)?;
 
@@ -358,7 +362,7 @@ impl Editor {
                 self.cursor
                     .as_mut()
                     .expect("must have cursor")
-                    .move_to_content(0, pos.1 as u16, &self.schedule, &mut self.stdout)?;
+                    .move_to_content(&pos.column(0), &self.schedule, &mut self.stdout)?;
 
                 // Redraw
                 true
@@ -378,19 +382,17 @@ impl Editor {
 
                 match col_kind {
                     command::ColumnKind::Index(idx) => cursor.move_to_content(
-                        *idx as u16,
-                        cursor_pos.1 as u16,
+                        &cursor_pos.column(*idx),
                         &self.schedule,
                         &mut self.stdout,
                     )?,
                     command::ColumnKind::Last => {
-                        let x = self.schedule.timeboxes[cursor_pos.1 as usize]
+                        let x = self.schedule.timeboxes[cursor_pos.line as usize]
                             .activity
                             .summary
-                            .len() as u16;
+                            .len();
                         cursor.move_to_content(
-                            x,
-                            cursor_pos.1 as u16,
+                            &cursor_pos.column(x),
                             &self.schedule,
                             &mut self.stdout,
                         )?
@@ -428,7 +430,7 @@ impl Editor {
                     let sched: &mut Schedule = &mut self.schedule;
                     sched
                         .timeboxes
-                        .insert(cursor_pos.1 as usize + 1, content.clone());
+                        .insert(cursor_pos.line as usize + 1, content.clone());
                     true
                 } else {
                     false
@@ -441,7 +443,7 @@ impl Editor {
 
                     self.schedule
                         .timeboxes
-                        .insert(cursor_pos.1 as usize, content.clone());
+                        .insert(cursor_pos.line, content.clone());
                     true
                 } else {
                     false
