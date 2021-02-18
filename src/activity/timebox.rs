@@ -9,6 +9,14 @@ pub struct TimeBox {
     pub time: Option<TimeSlotKind>,
     pub activity: Activity,
     pub done: bool,
+    pub adjust_policy: AdjustPolicy,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum AdjustPolicy {
+    Normal,
+    /// This time does not move unless moved as the primary item
+    Fixed,
 }
 
 #[derive(Clone, Debug)]
@@ -35,6 +43,7 @@ impl Default for TimeBox {
             time: None,
             activity: Activity::default(),
             done: false,
+            adjust_policy: AdjustPolicy::Normal,
         }
     }
 }

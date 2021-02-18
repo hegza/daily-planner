@@ -37,6 +37,7 @@ pub enum Command {
     InsertTimeBoxBelow,
     InsertTimeBoxAbove,
     ToggleCrossOver,
+    ToggleTimeAdjustPolicyFixed,
     PasteAbove,
     PasteBelow,
     MoveTimeCursor,

@@ -3,9 +3,13 @@ use std::io::Stdout;
 use crossterm::event::{KeyEvent, KeyModifiers};
 
 use crate::{
-    activity::TimeBox,
+    activity::{
+        timebox::{AdjustPolicy, TimeSlotKind},
+        TimeBox,
+    },
     editor::{cursor::ContentCursor, Result},
     schedule::Schedule,
+    time::Duration,
 };
 
 impl Schedule {
@@ -91,5 +95,46 @@ impl Schedule {
         self.timeboxes.insert(idx, TimeBox::default());
 
         Ok(true)
+    }
+
+    pub fn adjust_times_relative(
+        &mut self,
+        primary_index: usize,
+        adjust_duration: &Duration,
+        time_cursor: usize,
+    ) {
+        let primary = &mut self.timeboxes[primary_index];
+
+        // Always adjust the primary index
+        if let Some(time) = &mut primary.time {
+            match time {
+                TimeSlotKind::Time(t) => t.adjust(&adjust_duration),
+                TimeSlotKind::Span(start, end) => {
+                    // Use time cursor for the current, but not the rest
+                    if time_cursor == 0 {
+                        start.adjust(&adjust_duration);
+                        end.adjust(&adjust_duration)
+                    } else {
+                        end.adjust(&adjust_duration);
+                    };
+                }
+            };
+        }
+
+        // Adjust the others only if they are not fixed
+        for time_box in self.timeboxes[primary_index + 1..].iter_mut() {
+            if time_box.adjust_policy != AdjustPolicy::Fixed {
+                // If the slot has a time
+                if let Some(time) = &mut time_box.time {
+                    match time {
+                        TimeSlotKind::Time(t) => t.adjust(&adjust_duration),
+                        TimeSlotKind::Span(start, end) => {
+                            start.adjust(&adjust_duration);
+                            end.adjust(&adjust_duration);
+                        }
+                    };
+                }
+            }
+        }
     }
 }

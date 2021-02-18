@@ -1,5 +1,8 @@
 use super::Render;
-use crate::schedule::Schedule;
+use crate::{
+    activity::{timebox::AdjustPolicy, TimeBox},
+    schedule::Schedule,
+};
 use crossterm::{
     cursor,
     style::{self, style},
@@ -25,8 +28,11 @@ impl Render for Schedule {
             vars.insert("activity".to_owned(), format!("{}", time_box.activity));
             let content = strfmt(&fmt, &vars)?;
 
-            if time_box.done {
-                stdout.queue(style::SetAttribute(style::Attribute::CrossedOut))?;
+            let (set_styles, unset_styles): (Vec<_>, Vec<_>) =
+                time_box.resolve_styles().into_iter().unzip();
+
+            for set in set_styles {
+                stdout.queue(style::SetAttribute(set))?;
             }
 
             let styled = style(content);
@@ -34,8 +40,8 @@ impl Render for Schedule {
                 .queue(style::PrintStyledContent(styled))?
                 .queue(cursor::MoveToNextLine(1))?;
 
-            if time_box.done {
-                stdout.queue(style::SetAttribute(style::Attribute::NotCrossedOut))?;
+            for unset in unset_styles {
+                stdout.queue(style::SetAttribute(unset))?;
             }
         }
         stdout.flush()?;
@@ -52,5 +58,26 @@ impl Schedule {
             .map(|x| format!("{}", x).len())
             .max_by(|x, y| x.cmp(y))
             .unwrap_or(0)
+    }
+}
+
+impl TimeBox {
+    fn resolve_styles(&self) -> Vec<(style::Attribute, style::Attribute)> {
+        let mut styles = vec![];
+
+        // Cross out done items
+        if self.done {
+            styles.push((
+                style::Attribute::CrossedOut,
+                style::Attribute::NotCrossedOut,
+            ));
+        }
+
+        // Cursive fixed items
+        if self.adjust_policy == AdjustPolicy::Fixed {
+            styles.push((style::Attribute::Bold, style::Attribute::NormalIntensity));
+        }
+
+        styles
     }
 }

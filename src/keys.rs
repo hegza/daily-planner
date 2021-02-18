@@ -32,7 +32,8 @@ use crate::{
     - i: insert mode
     - h, l, left arrow, right arrow: adjust time by 1 hour
     - j, l, up arrow, down arrow: adjust time by 15 minutes
-    - r: swap between relative and absolute time mode
+    - r: toggle between relative and absolute time mode
+    - f: toggle fixed time adjust policy
     - Esc: cursor mode
 
     Insert mode:
@@ -197,6 +198,11 @@ pub const BINDINGS: &[Binding] = &[
         KeyCode::Esc,
         KeyModifiers::NONE,
         Command::CursorMode,
+        Filter::Mode(Mode::Time)
+    ),
+    bind_key!(
+        'f',
+        Command::ToggleTimeAdjustPolicyFixed,
         Filter::Mode(Mode::Time)
     ),
     bind_key!('r', Command::SwapTimeSubMode, Filter::Mode(Mode::Time)),

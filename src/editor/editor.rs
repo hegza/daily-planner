@@ -17,7 +17,10 @@ use crossterm::{
 };
 
 use crate::{
-    activity::{timebox::TimeSlotKind, TimeBox},
+    activity::{
+        timebox::{AdjustPolicy, TimeSlotKind},
+        TimeBox,
+    },
     schedule::Schedule,
     time::Duration,
 };
@@ -453,47 +456,29 @@ impl Editor {
                 let cursor = self.cursor.as_ref().unwrap();
                 let cursor_line = cursor.map_to_line();
 
-                let duration = Duration::hm(*hours, *minutes);
+                let adjust_duration = Duration::hm(*hours, *minutes);
 
-                match *self.time_mode.borrow() {
+                let adjust_mode = self.time_mode.borrow();
+                match *adjust_mode {
                     TimeMode::Relative => {
                         let schedule: &mut Schedule = &mut self.schedule;
-
-                        for (idx, time_box) in
-                            schedule.timeboxes[cursor_line..].iter_mut().enumerate()
-                        {
-                            if let Some(time) = &mut time_box.time {
-                                match time {
-                                    TimeSlotKind::Time(t) => t.adjust(&duration),
-                                    TimeSlotKind::Span(start, end) => {
-                                        // Use time cursor for the current, but not the rest
-                                        if idx == 0 {
-                                            if self.time_cursor == 0 {
-                                                start.adjust(&duration);
-                                                end.adjust(&duration)
-                                            } else {
-                                                end.adjust(&duration);
-                                            };
-                                        } else {
-                                            start.adjust(&duration);
-                                            end.adjust(&duration);
-                                        };
-                                    }
-                                };
-                            }
-                        }
+                        schedule.adjust_times_relative(
+                            cursor_line,
+                            &adjust_duration,
+                            self.time_cursor,
+                        );
                     }
                     TimeMode::Absolute => {
                         let timebox = &mut self.schedule.timeboxes[cursor_line];
                         if let Some(time) = &mut timebox.time {
                             match time {
-                                TimeSlotKind::Time(t) => t.adjust(&duration),
+                                TimeSlotKind::Time(t) => t.adjust(&adjust_duration),
                                 TimeSlotKind::Span(start, end) => {
                                     if self.time_cursor == 0 {
-                                        start.adjust(&duration);
-                                        end.adjust(&duration)
+                                        start.adjust(&adjust_duration);
+                                        end.adjust(&adjust_duration)
                                     } else {
-                                        end.adjust(&duration);
+                                        end.adjust(&adjust_duration);
                                     };
                                 }
                             };
@@ -533,8 +518,29 @@ impl Editor {
                 }
                 true
             }
+            Command::ToggleTimeAdjustPolicyFixed => {
+                let time_box = self.item_on_cursor_mut();
+
+                let new_policy = match time_box.adjust_policy {
+                    AdjustPolicy::Normal => AdjustPolicy::Fixed,
+                    AdjustPolicy::Fixed => AdjustPolicy::Normal,
+                };
+
+                time_box.adjust_policy = new_policy;
+
+                true
+            }
         };
         Ok(redraw)
+    }
+
+    fn item_on_cursor_mut(&mut self) -> &mut TimeBox {
+        let cursor_line = self
+            .cursor
+            .as_ref()
+            .expect("must have cursor")
+            .map_to_line();
+        &mut self.schedule.timeboxes[cursor_line]
     }
 }
 
