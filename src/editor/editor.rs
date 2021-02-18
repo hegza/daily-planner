@@ -407,19 +407,14 @@ impl Editor {
                 true
             }
             Command::CutCurrentLine => {
-                // Move first to avoid getting stuck outside of the editor area
-                let cur = self.cursor.as_mut().expect("must have cursor");
-                if !cur.move_up(&self.schedule, &mut self.stdout)? {
-                    // On failure, move to first column...
-                    cur.move_to_column(0, &self.schedule, &mut self.stdout)?;
-                    // ... then try again
-                    cur.move_up(&self.schedule, &mut self.stdout)?;
-                }
-
                 let cursor = self.cursor.as_ref().unwrap();
-                let cursor_line = cursor.map_to_line() + 1 /* +1 because we moved the cursor */;
+                let cursor_line = cursor.map_to_line();
 
                 let removed = self.schedule.timeboxes.remove(cursor_line as usize);
+                self.cursor
+                    .as_mut()
+                    .expect("must have cursor")
+                    .clamp_to_content(&self.schedule);
 
                 self.clipboard = Some(removed);
 
@@ -428,12 +423,15 @@ impl Editor {
             Command::PasteBelow => {
                 if let Some(content) = self.clipboard.as_ref() {
                     let cursor = self.cursor.as_ref().unwrap();
-                    let cursor_pos = cursor.map_to_content(&self.schedule);
+                    let mut cursor_line = cursor.map_to_line();
+                    if cursor_line >= self.schedule.timeboxes.len() {
+                        cursor_line = self.schedule.timeboxes.len() - 1;
+                    }
 
                     let sched: &mut Schedule = &mut self.schedule;
                     sched
                         .timeboxes
-                        .insert(cursor_pos.line as usize + 1, content.clone());
+                        .insert(cursor_line as usize + 1, content.clone());
                     true
                 } else {
                     false

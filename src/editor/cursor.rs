@@ -181,6 +181,29 @@ impl ContentCursor {
         Ok(true)
     }
 
+    pub fn clamp_to_content(&mut self, schedule: &Schedule) {
+        let y_min = *self.schedule_y.borrow();
+        if self.pos.vpos < y_min {
+            self.pos.vpos = y_min;
+        }
+
+        let y_max = y_min + (*self.schedule_h.borrow()).min(schedule.timeboxes.len() as u16 - 1);
+        if self.pos.vpos > y_max {
+            self.pos.vpos = y_max;
+        }
+
+        let x_min = schedule.time_col_width() as u16 + 1;
+        if self.pos.hpos < x_min {
+            self.pos.hpos = x_min;
+        }
+
+        let content_line = self.map_to_line();
+        let x_max = x_min + schedule.timeboxes[content_line].activity.summary.len() as u16;
+        if self.pos.hpos > x_max {
+            self.pos.hpos = x_max;
+        }
+    }
+
     fn move_terminal_cursor(screen_h: u16, screen_v: u16, stdout: &mut Stdout) -> Result<()> {
         Ok(stdout.queue(cursor::MoveTo(screen_h, screen_v))?.flush()?)
     }
