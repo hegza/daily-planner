@@ -294,12 +294,8 @@ impl Editor {
                     let cursor_line = cursor.map_to_line();
 
                     if self.schedule.timeboxes[cursor_line].time.is_none() {
-                        let prev_time = self.schedule.timeboxes[..cursor_line]
-                            .iter()
-                            .rev()
-                            .find_map(|time_box| time_box.time.clone())
-                            .unwrap_or(TimeSlotKind::Time(self.schedule.wake_up));
-                        self.schedule.mut_line(&cursor).time = Some(prev_time);
+                        let inherit_time = TimeSlotKind::inherit_time(cursor_line, &self.schedule);
+                        self.schedule.mut_line(&cursor).time = Some(inherit_time);
 
                         // ... and use absolute mode
                         *self.time_mode.borrow_mut() = TimeMode::Absolute;

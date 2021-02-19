@@ -50,12 +50,8 @@ impl Default for TimeBox {
 
 impl TimeSlotKind {
     pub fn inherit_time(insert_at: usize, schedule: &Schedule) -> TimeSlotKind {
-        if insert_at == 0 {
-            return TimeSlotKind::Time(schedule.wake_up);
-        }
-
         // Take the first item with a time above (at - 1)
-        for item in schedule.timeboxes[..insert_at - 1].iter().rev() {
+        for item in schedule.timeboxes[..insert_at].iter().rev() {
             if let Some(t) = &item.time {
                 return t.clone();
             }
