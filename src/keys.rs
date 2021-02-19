@@ -205,6 +205,11 @@ pub const BINDINGS: &[Binding] = &[
         Command::ToggleTimeAdjustPolicyFixed,
         Filter::Mode(Mode::Time)
     ),
+    bind_key!(
+        's',
+        Command::ToggleBetweenSpanAndTime,
+        Filter::Mode(Mode::Time)
+    ),
     bind_key!('r', Command::SwapTimeSubMode, Filter::Mode(Mode::Time)),
     // Insert-mode
     bind!(

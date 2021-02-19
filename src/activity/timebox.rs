@@ -1,7 +1,7 @@
 use std::fmt;
 
 use super::Activity;
-use crate::{time::Duration, Time};
+use crate::{schedule::Schedule, time::Duration, Time};
 
 /// A time box with a set activity and possibly a time slot.
 #[derive(Clone, Debug)]
@@ -45,5 +45,23 @@ impl Default for TimeBox {
             done: false,
             adjust_policy: AdjustPolicy::Normal,
         }
+    }
+}
+
+impl TimeSlotKind {
+    pub fn inherit_time(insert_at: usize, schedule: &Schedule) -> TimeSlotKind {
+        if insert_at == 0 {
+            return TimeSlotKind::Time(schedule.wake_up);
+        }
+
+        // Take the first item with a time above (at - 1)
+        for item in schedule.timeboxes[..insert_at - 1].iter().rev() {
+            if let Some(t) = &item.time {
+                return t.clone();
+            }
+        }
+
+        // If no times found, return wake up
+        TimeSlotKind::Time(schedule.wake_up)
     }
 }

@@ -12,4 +12,8 @@ impl Schedule {
         let line = cursor.map_to_line();
         &mut self.timeboxes[line]
     }
+
+    pub fn get(&self, idx: usize) -> Option<&TimeBox> {
+        self.timeboxes.get(idx)
+    }
 }

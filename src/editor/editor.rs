@@ -528,6 +528,25 @@ impl Editor {
 
                 true
             }
+            Command::ToggleBetweenSpanAndTime => {
+                let time = &self.item_on_cursor_mut().time;
+
+                let ntime = match time {
+                    Some(slot) => match slot {
+                        TimeSlotKind::Time(t) => TimeSlotKind::Span(t.clone(), t.clone()),
+                        TimeSlotKind::Span(start, _end) => TimeSlotKind::Time(*start),
+                    },
+                    None => {
+                        // No time -> add it
+                        let cursor = self.cursor.as_ref().expect("must have cursor");
+
+                        TimeSlotKind::inherit_time(cursor.map_to_line(), &self.schedule)
+                    }
+                };
+                self.item_on_cursor_mut().time = Some(ntime);
+
+                true
+            }
         };
         Ok(redraw)
     }
