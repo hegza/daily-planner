@@ -1,5 +1,5 @@
 use crate::{
-    activity::{timebox::TimeSlotKind, Activity, TimeBox},
+    activity::{Activity, TimeBox, TimeSlotKind},
     schedule::Schedule,
     time::Duration,
     Time,
