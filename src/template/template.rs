@@ -1,3 +1,5 @@
+use chrono::NaiveTime;
+
 use crate::{
     activity::{Activity, TimeBox, TimeSlotKind},
     schedule::Schedule,
@@ -36,6 +38,8 @@ pub enum TimeTemplate {
 pub struct TemplateMeta {
     pub wake_up: Time,
     pub span_len: Duration,
+    pub sunrise: Option<NaiveTime>,
+    pub sunset: Option<NaiveTime>,
 }
 
 impl Template {
@@ -51,6 +55,8 @@ impl Template {
         Schedule {
             timeboxes,
             wake_up: meta.wake_up,
+            sunrise: meta.sunrise,
+            sunset: meta.sunset,
         }
     }
 }

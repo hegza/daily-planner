@@ -1,8 +1,9 @@
 use super::Render;
 use crate::{
-    activity::{timebox::AdjustPolicy, TimeBox},
+    activity::{timebox::AdjustPolicy, TimeBox, TimeSlotKind},
     schedule::Schedule,
 };
+use chrono::NaiveTime;
 use crossterm::{
     cursor,
     style::{self, style},
@@ -10,13 +11,42 @@ use crossterm::{
 };
 use std::{
     collections::HashMap,
-    io::{Stdout, Write},
+    io::{StdinLock, Stdout, Write},
 };
 use strfmt::strfmt;
 
 impl Render for Schedule {
     fn render(&self, stdout: &mut Stdout) -> crate::editor::Result<()> {
+        let mut circ_sector = if self.sunrise.is_some() && self.sunset.is_some() {
+            CircadianSector::PreDawn
+        } else {
+            CircadianSector::Day
+        };
+        stdout.queue(style::SetForegroundColor(circ_sector.color()))?;
+
         for time_box in self.timeboxes.iter() {
+            if self.sunrise.is_some() && self.sunset.is_some() {
+                let sunrise = self.sunrise.unwrap();
+                let sunset = self.sunset.unwrap();
+                if let Some(time) = &time_box.time {
+                    let time = match time {
+                        TimeSlotKind::Time(t) => t,
+                        TimeSlotKind::Span(t, _) => t,
+                    };
+                    let time = NaiveTime::from_hms(time.hour as u32, time.min as u32, 0);
+                    let next_color = match circ_sector {
+                        CircadianSector::PreDawn => time >= sunrise,
+                        CircadianSector::Day => time >= sunset,
+                        CircadianSector::Dusk => false,
+                        CircadianSector::Night => false,
+                    };
+                    if next_color {
+                        circ_sector = circ_sector.next();
+                        stdout.queue(style::SetForegroundColor(circ_sector.color()))?;
+                    }
+                }
+            }
+
             let t_str = match &time_box.time {
                 Some(t) => format!("{}", t),
                 None => "     ".to_owned(),
@@ -44,6 +74,7 @@ impl Render for Schedule {
                 stdout.queue(style::SetAttribute(unset))?;
             }
         }
+        stdout.queue(style::SetForegroundColor(style::Color::Reset))?;
         stdout.flush()?;
 
         Ok(())
@@ -79,5 +110,44 @@ impl TimeBox {
         }
 
         styles
+    }
+}
+
+#[derive(Clone, PartialEq, Copy)]
+enum CircadianSector {
+    PreDawn,
+    Day,
+    Dusk,
+    Night,
+}
+
+impl CircadianSector {
+    fn next(&self) -> CircadianSector {
+        match self {
+            CircadianSector::PreDawn => CircadianSector::Day,
+            CircadianSector::Day => CircadianSector::Dusk,
+            CircadianSector::Dusk => CircadianSector::Night,
+            CircadianSector::Night => CircadianSector::PreDawn,
+        }
+    }
+    fn color(&self) -> style::Color {
+        match self {
+            CircadianSector::PreDawn => style::Color::Rgb {
+                r: 235,
+                g: 180,
+                b: 180,
+            },
+            CircadianSector::Day => style::Color::Reset,
+            CircadianSector::Dusk => style::Color::Rgb {
+                r: 215,
+                g: 180,
+                b: 220,
+            },
+            CircadianSector::Night => style::Color::Rgb {
+                r: 100,
+                g: 100,
+                b: 255,
+            },
+        }
     }
 }

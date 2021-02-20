@@ -1,3 +1,5 @@
+use chrono::NaiveTime;
+
 use crate::{activity::TimeBox, editor::cursor::ContentCursor, Time};
 
 /// Main data structure
@@ -5,6 +7,8 @@ use crate::{activity::TimeBox, editor::cursor::ContentCursor, Time};
 pub struct Schedule {
     pub timeboxes: Vec<TimeBox>,
     pub wake_up: Time,
+    pub sunrise: Option<NaiveTime>,
+    pub sunset: Option<NaiveTime>,
 }
 
 impl Schedule {

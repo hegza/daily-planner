@@ -46,7 +46,9 @@ impl EditorLike<Editor> for Editor {
             eprintln!("{}", err);
         };
 
-        self.run().unwrap_or_else(on_error)
+        self.run().unwrap_or_else(on_error);
+
+        disable_raw_mode().unwrap();
     }
 }
 
