@@ -81,30 +81,6 @@ pub const BINDINGS: &[Binding] = &[
         Command::MoveCursor(MoveCursor::Dir(Dir::Up)),
         Filter::Mode(Mode::Cursor)
     ),
-    bind!(
-        KeyCode::Down,
-        KeyModifiers::NONE,
-        Command::MoveCursor(MoveCursor::Dir(Dir::Down)),
-        Filter::Mode(Mode::Cursor)
-    ),
-    bind!(
-        KeyCode::Up,
-        KeyModifiers::NONE,
-        Command::MoveCursor(MoveCursor::Dir(Dir::Up)),
-        Filter::Mode(Mode::Cursor)
-    ),
-    bind!(
-        KeyCode::Left,
-        KeyModifiers::NONE,
-        Command::MoveCursor(MoveCursor::Dir(Dir::Left)),
-        Filter::Mode(Mode::Cursor)
-    ),
-    bind!(
-        KeyCode::Right,
-        KeyModifiers::NONE,
-        Command::MoveCursor(MoveCursor::Dir(Dir::Right)),
-        Filter::Mode(Mode::Cursor)
-    ),
     bind_key!('i', Command::InsertMode, Filter::Mode(Mode::Cursor)),
     bind_key!('t', Command::TimeMode, Filter::Mode(Mode::Cursor)),
     bind_key!(
@@ -221,30 +197,6 @@ pub const BINDINGS: &[Binding] = &[
         ]),
         Filter::Mode(Mode::Insert)
     ),
-    bind!(
-        KeyCode::Down,
-        KeyModifiers::NONE,
-        Command::MoveCursor(MoveCursor::Dir(Dir::Down)),
-        Filter::Mode(Mode::Insert)
-    ),
-    bind!(
-        KeyCode::Up,
-        KeyModifiers::NONE,
-        Command::MoveCursor(MoveCursor::Dir(Dir::Up)),
-        Filter::Mode(Mode::Insert)
-    ),
-    bind!(
-        KeyCode::Left,
-        KeyModifiers::NONE,
-        Command::MoveCursor(MoveCursor::Dir(Dir::Left)),
-        Filter::Mode(Mode::Insert)
-    ),
-    bind!(
-        KeyCode::Right,
-        KeyModifiers::NONE,
-        Command::MoveCursor(MoveCursor::Dir(Dir::Right)),
-        Filter::Mode(Mode::Insert)
-    ),
     // GoTo mode
     /*
     bind!(
@@ -267,4 +219,29 @@ pub const BINDINGS: &[Binding] = &[
         Filter::Mode(Mode::Delete)
     ),
     bind_key!('t', Command::DeleteTime, Filter::Mode(Mode::Delete)),
+    // Multiple modes
+    bind!(
+        KeyCode::Down,
+        KeyModifiers::NONE,
+        Command::MoveCursor(MoveCursor::Dir(Dir::Down)),
+        Filter::Modes(&[Mode::Insert, Mode::Cursor])
+    ),
+    bind!(
+        KeyCode::Up,
+        KeyModifiers::NONE,
+        Command::MoveCursor(MoveCursor::Dir(Dir::Up)),
+        Filter::Modes(&[Mode::Insert, Mode::Cursor])
+    ),
+    bind!(
+        KeyCode::Left,
+        KeyModifiers::NONE,
+        Command::MoveCursor(MoveCursor::Dir(Dir::Left)),
+        Filter::Modes(&[Mode::Insert, Mode::Cursor])
+    ),
+    bind!(
+        KeyCode::Right,
+        KeyModifiers::NONE,
+        Command::MoveCursor(MoveCursor::Dir(Dir::Right)),
+        Filter::Modes(&[Mode::Insert, Mode::Cursor])
+    ),
 ];

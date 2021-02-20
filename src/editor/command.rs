@@ -74,7 +74,18 @@ pub enum Dir {
 #[derive(Debug)]
 pub enum Filter {
     Mode(Mode),
+    Modes(&'static [Mode]),
     Global,
+}
+
+impl Filter {
+    pub fn match_mode(&self, mode: &Mode) -> bool {
+        match self {
+            Filter::Global => true,
+            Filter::Mode(m) => m == mode,
+            Filter::Modes(ms) => ms.contains(mode),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -86,21 +97,10 @@ pub struct Binding {
 
 impl Binding {
     fn match_command(&self, key: &KeyEvent, mode: &Mode) -> Option<Command> {
-        match self.filter {
-            Filter::Global => {
-                if key == &self.key {
-                    Some(self.command.clone())
-                } else {
-                    None
-                }
-            }
-            Filter::Mode(ref filter_mode) => {
-                if filter_mode == mode && key == &self.key {
-                    Some(self.command.clone())
-                } else {
-                    None
-                }
-            }
+        if self.filter.match_mode(mode) && key == &self.key {
+            Some(self.command.clone())
+        } else {
+            None
         }
     }
 }
