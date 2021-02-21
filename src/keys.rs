@@ -16,6 +16,7 @@ use crate::{
     - h, l, left arrow, right arrow: move cursor (and ghost) horizontal
     - j, k, down arrow, up arrow: move cursor vertical, account for horizontal ghost
     - i: insert mode
+    - a: move right and insert mode
     - t: time mode
     - o: create line below and move in insert mode
     - O: create line above and move in insert mode
@@ -82,6 +83,14 @@ pub const BINDINGS: &[Binding] = &[
         Filter::Mode(Mode::Cursor)
     ),
     bind_key!('i', Command::InsertMode, Filter::Mode(Mode::Cursor)),
+    bind_key!(
+        'a',
+        Command::Multi(&[
+            Command::InsertMode,
+            Command::MoveCursor(MoveCursor::Dir(Dir::Right))
+        ]),
+        Filter::Mode(Mode::Cursor)
+    ),
     bind_key!('t', Command::TimeMode, Filter::Mode(Mode::Cursor)),
     bind_key!(
         'o',
