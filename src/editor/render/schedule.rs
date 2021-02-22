@@ -11,7 +11,7 @@ use crossterm::{
 };
 use std::{
     collections::HashMap,
-    io::{StdinLock, Stdout, Write},
+    io::{Stdout, Write},
 };
 use strfmt::strfmt;
 

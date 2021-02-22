@@ -1,6 +1,6 @@
 mod math;
 
-use std::{fmt, str::FromStr};
+use std::{cmp, fmt, str::FromStr};
 
 use crate::template::template::TimeTemplate;
 
@@ -165,5 +165,17 @@ impl fmt::Display for Duration {
         } else {
             write!(f, "{}m", min)
         }
+    }
+}
+
+impl PartialOrd for Time {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.hour
+            .partial_cmp(&other.hour)
+            .and_then(|ord| match ord {
+                cmp::Ordering::Less => Some(cmp::Ordering::Less),
+                cmp::Ordering::Equal => self.min.partial_cmp(&other.min),
+                cmp::Ordering::Greater => Some(cmp::Ordering::Greater),
+            })
     }
 }

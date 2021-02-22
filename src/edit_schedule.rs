@@ -113,8 +113,7 @@ impl Schedule {
         time_cursor: usize,
     ) {
         // Always adjust the primary index
-        let timebox = &mut self.timeboxes[primary_index];
-        timebox.adjust_absolute(adjust_duration, time_cursor == 0);
+        self.adjust_time_absolute(primary_index, adjust_duration, time_cursor);
 
         // Adjust the others only if they are not fixed
         for time_box in self.timeboxes[primary_index + 1..].iter_mut() {
@@ -122,5 +121,22 @@ impl Schedule {
                 time_box.adjust_absolute(adjust_duration, true);
             }
         }
+    }
+
+    /// Adjusts the item at given index. Reorders the item if necessary
+    pub fn adjust_time_absolute(
+        &mut self,
+        idx: usize,
+        adjust_duration: &Duration,
+        time_cursor: usize,
+    ) {
+        let timebox = &mut self.timeboxes[idx];
+        timebox.adjust_absolute(&adjust_duration, time_cursor == 0);
+    }
+
+    pub fn swap(&mut self, first: usize, second: usize) {
+        let temp = self.timeboxes[first].clone();
+        self.timeboxes[first] = self.timeboxes[second].clone();
+        self.timeboxes[second] = temp;
     }
 }

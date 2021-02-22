@@ -461,8 +461,11 @@ impl Editor {
                     }
                     TimeMode::Absolute => {
                         let schedule: &mut Schedule = &mut self.schedule;
-                        schedule.timeboxes[cursor_line]
-                            .adjust_absolute(&adjust_duration, self.time_cursor == 0);
+                        schedule.adjust_time_absolute(
+                            cursor_line,
+                            &adjust_duration,
+                            self.time_cursor,
+                        );
                     }
                 }
 

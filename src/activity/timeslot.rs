@@ -1,8 +1,8 @@
-use std::fmt;
+use std::{cmp, fmt};
 
 use crate::{schedule::Schedule, time::Duration, Time};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum TimeSlotKind {
     Time(Time),
     Span(Time, Time),
@@ -42,5 +42,19 @@ impl fmt::Display for TimeSlotKind {
                 f.write_str(&format!("{}--{} ({})", start, end, len))
             }
         }
+    }
+}
+
+impl PartialOrd for TimeSlotKind {
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+        let a = match self {
+            TimeSlotKind::Time(t) => t,
+            TimeSlotKind::Span(s, _) => s,
+        };
+        let b = match other {
+            TimeSlotKind::Time(t) => t,
+            TimeSlotKind::Span(s, _) => s,
+        };
+        a.partial_cmp(b)
     }
 }
