@@ -77,7 +77,18 @@ impl Schedule {
             KeyCode::PageDown => false,
             KeyCode::Tab => false,
             KeyCode::BackTab => false,
-            KeyCode::Delete => false,
+            // Remove the character right of cursor
+            KeyCode::Delete => {
+                let line_len = edit_text.len();
+                if char_idx != line_len {
+                    let remove = char_idx;
+                    edit_text.remove(remove);
+
+                    true
+                } else {
+                    false
+                }
+            }
             KeyCode::Insert => false,
             KeyCode::F(_) => false,
             _ => false,
