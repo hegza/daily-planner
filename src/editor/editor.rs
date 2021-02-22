@@ -460,20 +460,9 @@ impl Editor {
                         );
                     }
                     TimeMode::Absolute => {
-                        let timebox = &mut self.schedule.timeboxes[cursor_line];
-                        if let Some(time) = &mut timebox.time {
-                            match time {
-                                TimeSlotKind::Time(t) => t.adjust(&adjust_duration),
-                                TimeSlotKind::Span(start, end) => {
-                                    if self.time_cursor == 0 {
-                                        start.adjust(&adjust_duration);
-                                        end.adjust(&adjust_duration)
-                                    } else {
-                                        end.adjust(&adjust_duration);
-                                    };
-                                }
-                            };
-                        }
+                        let schedule: &mut Schedule = &mut self.schedule;
+                        schedule.timeboxes[cursor_line]
+                            .adjust_absolute(&adjust_duration, self.time_cursor == 0);
                     }
                 }
 

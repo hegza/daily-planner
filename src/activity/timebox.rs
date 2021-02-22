@@ -1,3 +1,5 @@
+use crate::time::Duration;
+
 use super::Activity;
 use super::TimeSlotKind;
 
@@ -24,6 +26,14 @@ impl Default for TimeBox {
             activity: Activity::default(),
             done: false,
             adjust_policy: AdjustPolicy::Normal,
+        }
+    }
+}
+
+impl TimeBox {
+    pub fn adjust_absolute(&mut self, adjust_duration: &Duration, adjust_start: bool) {
+        if let Some(time) = &mut self.time {
+            time.adjust_absolute(adjust_duration, adjust_start)
         }
     }
 }

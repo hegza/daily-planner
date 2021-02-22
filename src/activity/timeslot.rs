@@ -20,6 +20,17 @@ impl TimeSlotKind {
         // If no times found, return wake up
         TimeSlotKind::Time(schedule.wake_up)
     }
+    pub fn adjust_absolute(&mut self, adjust_duration: &Duration, adjust_start: bool) {
+        match self {
+            TimeSlotKind::Time(t) => t.adjust(&adjust_duration),
+            TimeSlotKind::Span(start, end) => {
+                if adjust_start {
+                    start.adjust(&adjust_duration);
+                };
+                end.adjust(&adjust_duration);
+            }
+        };
+    }
 }
 
 impl fmt::Display for TimeSlotKind {
