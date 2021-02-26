@@ -1,10 +1,11 @@
 mod time;
 mod timebox;
 
+use chrono::format::parse;
 use std::str::FromStr;
 use thiserror::Error;
 
-use crate::activity::activity::ActivityDeserializationError;
+use crate::activity::activity::{ActivityDeserializationError, ActivityKind};
 
 use super::{
     template::{TimeBoxTemplate, TimeSlotTemplate, TimeTemplate},
@@ -66,5 +67,17 @@ impl FromStr for TimeSlotTemplate {
         else {
             TimeSlotTemplate::Time(TimeTemplate::from_str(s)?)
         })
+    }
+}
+
+impl FromStr for ActivityKind {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "meal" => Ok(ActivityKind::Meal),
+            "sprint" => Ok(ActivityKind::Sprint),
+            _ => Ok(ActivityKind::Unknown),
+        }
     }
 }

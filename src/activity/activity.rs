@@ -18,11 +18,15 @@ impl Default for Activity {
 
 impl fmt::Display for Activity {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", &self.summary)
+        if self.kind == ActivityKind::Sprint {
+            write!(f, "sprint: {}", &self.summary)
+        } else {
+            write!(f, "{}", &self.summary)
+        }
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ActivityKind {
     Unknown,
     Meal,

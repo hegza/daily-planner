@@ -5,7 +5,7 @@ use std::{
 };
 
 use crate::{
-    activity::Activity,
+    activity::{activity::ActivityKind, Activity},
     template::template::{TimeBoxTemplate, TimeSlotTemplate},
 };
 
@@ -27,6 +27,7 @@ impl FromStr for TimeBoxTemplate {
 struct TemplateTimeBoxParser<'t> {
     tokens: Peekable<SplitWhitespace<'t>>,
     timeslot_detected: bool,
+    activity_kind_identified: bool,
 }
 
 impl<'t> TemplateTimeBoxParser<'t> {
@@ -34,20 +35,21 @@ impl<'t> TemplateTimeBoxParser<'t> {
         TemplateTimeBoxParser {
             tokens,
             timeslot_detected: false,
+            activity_kind_identified: false,
         }
     }
 
     pub fn generate(mut self) -> Result<TimeBoxTemplate, ParseError> {
-        let first = self.tokens.peek();
+        let first_token = self.tokens.peek();
 
-        if first == None {
+        if first_token == None {
             return Err(ParseError::EmptyString);
         }
 
-        let next = *first.unwrap();
+        let next = *first_token.unwrap();
         let first_char = next.trim().chars().nth(0).unwrap();
         if MARKDOWN_LIST_TOKENS.contains(&first_char) {
-            // Skip it
+            // Skip the list token
             self.tokens.next().unwrap();
         }
 
@@ -63,9 +65,18 @@ impl<'t> TemplateTimeBoxParser<'t> {
                     // TODO: initialize appropriately
                     time = Some(timeslot_template);
                 }
+                TokenKind::ActivityKind(kind) => {
+                    if activity.is_none() {
+                        activity = Some(Activity::default());
+                    }
+                    activity.as_mut().unwrap().kind = kind;
+                }
                 TokenKind::ActivityText => {
                     let all = std::iter::once(next).chain(self.tokens.clone()).join(" ");
-                    activity = Some(Activity::from_str(&all)?);
+                    if activity.is_none() {
+                        activity = Some(Activity::default());
+                    }
+                    activity.as_mut().unwrap().summary = all;
                     break;
                 }
             }
@@ -79,7 +90,7 @@ impl<'t> TemplateTimeBoxParser<'t> {
         }
     }
 
-    /// Sets self.timeslot_detected as true if a timeslot is parsed.
+    /// Figure out which kind of token this one is. State machine. Sets self.timeslot_detected as true if a timeslot is parsed.
     fn token_kind(&mut self, token: &str) -> TokenKind {
         let token = token.trim();
 
@@ -96,6 +107,22 @@ impl<'t> TemplateTimeBoxParser<'t> {
             }
         }
 
+        // If no kind is detected for activity, try if one can be parsed
+        if !self.activity_kind_identified {
+            if token.chars().last().unwrap() == ':' {
+                let activity_maybe = token
+                    .chars()
+                    .take(token.chars().count() - 1)
+                    .collect::<String>();
+                if let Ok(activity_kind) = ActivityKind::from_str(&activity_maybe) {
+                    if activity_kind != ActivityKind::Unknown {
+                        self.activity_kind_identified = true;
+                        return TokenKind::ActivityKind(activity_kind);
+                    }
+                }
+            }
+        }
+
         // If nothing else applies, this token is "content"
         TokenKind::ActivityText
     }
@@ -104,5 +131,6 @@ impl<'t> TemplateTimeBoxParser<'t> {
 enum TokenKind {
     ListInitializer,
     Time(TimeSlotTemplate),
+    ActivityKind(ActivityKind),
     ActivityText,
 }
