@@ -12,12 +12,16 @@ pub struct Schedule {
 }
 
 impl Schedule {
-    pub fn mut_line(&mut self, cursor: &ContentCursor) -> &mut TimeBox {
+    pub fn mut_line_at_cursor(&mut self, cursor: &ContentCursor) -> &mut TimeBox {
         let line = cursor.map_to_line();
         &mut self.timeboxes[line]
     }
 
-    pub fn get(&self, idx: usize) -> Option<&TimeBox> {
+    pub fn mut_line(&mut self, idx: usize) -> Option<&mut TimeBox> {
+        self.timeboxes.get_mut(idx)
+    }
+
+    pub fn line(&self, idx: usize) -> Option<&TimeBox> {
         self.timeboxes.get(idx)
     }
 }

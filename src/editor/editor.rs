@@ -292,7 +292,7 @@ impl Editor {
 
                     if self.schedule.timeboxes[cursor_line].time.is_none() {
                         let inherit_time = TimeSlotKind::inherit_time(cursor_line, &self.schedule);
-                        self.schedule.mut_line(&cursor).time = Some(inherit_time);
+                        self.schedule.mut_line_at_cursor(&cursor).time = Some(inherit_time);
 
                         // ... and use absolute mode
                         *self.time_mode.borrow_mut() = TimeMode::Absolute;
@@ -481,14 +481,14 @@ impl Editor {
             }
             Command::DeleteTime => {
                 self.schedule
-                    .mut_line(self.cursor.as_ref().expect("must have cursor"))
+                    .mut_line_at_cursor(self.cursor.as_ref().expect("must have cursor"))
                     .time = None;
                 true
             }
             Command::ToggleCrossOver => {
                 let line = self
                     .schedule
-                    .mut_line(&self.cursor.as_ref().expect("must have cursor"));
+                    .mut_line_at_cursor(&self.cursor.as_ref().expect("must have cursor"));
                 line.done = !line.done;
                 true
             }

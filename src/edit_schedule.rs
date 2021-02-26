@@ -1,4 +1,4 @@
-use std::io::Stdout;
+use std::{cmp::Ordering, io::Stdout};
 
 use crossterm::event::{KeyEvent, KeyModifiers};
 
@@ -116,9 +116,10 @@ impl Schedule {
         self.adjust_time_absolute(primary_index, adjust_duration, time_cursor);
 
         // Adjust the others only if they are not fixed
-        for time_box in self.timeboxes[primary_index + 1..].iter_mut() {
-            if time_box.adjust_policy != AdjustPolicy::Fixed {
-                time_box.adjust_absolute(adjust_duration, true);
+        for idx in primary_index + 1..self.timeboxes.len() {
+            let timebox = self.mut_line(idx).unwrap();
+            if timebox.adjust_policy != AdjustPolicy::Fixed {
+                timebox.adjust_absolute(adjust_duration, true);
             }
         }
     }
