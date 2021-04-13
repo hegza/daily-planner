@@ -18,11 +18,7 @@ impl Default for Activity {
 
 impl fmt::Display for Activity {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.kind == ActivityKind::Sprint {
-            write!(f, "sprint: {}", &self.summary)
-        } else {
-            write!(f, "{}", &self.summary)
-        }
+        write!(f, "{}", &self.summary)
     }
 }
 
