@@ -2,6 +2,7 @@ use std::{cmp, fmt};
 
 use crate::{schedule::Schedule, time::Duration, Time};
 
+/// A time or a span of time.
 #[derive(Clone, Debug, PartialEq)]
 pub enum TimeSlotKind {
     Time(Time),

@@ -3,7 +3,9 @@ use crate::time::Duration;
 use super::Activity;
 use super::TimeSlotKind;
 
-/// A time box with a set activity and possibly a time slot.
+/// A time box is an activity container with the option for a time slot.
+///
+/// A time box can be done or not done. Adjust policy determines how the time box moves in relation to having its or its surroundings time change.
 #[derive(Clone, Debug)]
 pub struct TimeBox {
     pub time: Option<TimeSlotKind>,

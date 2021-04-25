@@ -1,6 +1,7 @@
 use std::{fmt, str::FromStr};
 use thiserror::Error;
 
+/// Represents an activity with a kind and a summary. Kind is unkown my default.
 #[derive(Clone, Debug)]
 pub struct Activity {
     pub summary: String,
@@ -28,6 +29,8 @@ pub enum ActivityKind {
     Meal,
     Sprint,
 }
+
+// Errors
 
 #[derive(Error, Debug)]
 pub enum ActivityDeserializationError {}
