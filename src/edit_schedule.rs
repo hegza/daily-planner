@@ -105,7 +105,8 @@ impl Schedule {
         Ok(true)
     }
 
-    /// Adjusts the item at primary index, and everything after it if they're not fixed
+    /// Adjusts the item at primary index, and everything after it if they're
+    /// not fixed
     pub fn adjust_times_relative(
         &mut self,
         primary_index: usize,

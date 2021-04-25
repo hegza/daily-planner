@@ -28,7 +28,8 @@ pub struct Editor {
     cursor: Option<ContentCursor>,
     /// The y-position of the cursor was when the schedule started to render
     schedule_y: Rc<RefCell<u16>>,
-    /// The height of the schedule when rendered, based on cursor y-position when the schedule stopped rendering
+    /// The height of the schedule when rendered, based on cursor y-position
+    /// when the schedule stopped rendering
     schedule_h: Rc<RefCell<u16>>,
     pub mode: Rc<RefCell<Mode>>,
     pub time_mode: Rc<RefCell<TimeMode>>,
@@ -285,7 +286,8 @@ impl Editor {
             Command::TimeMode => {
                 *self.mode.borrow_mut() = Mode::Time;
 
-                // If time mode was entered on something without time, create it + move to absolute mode
+                // If time mode was entered on something without time, create it + move to
+                // absolute mode
                 {
                     let cursor = self.cursor.as_ref().unwrap();
                     let cursor_line = cursor.map_to_line();

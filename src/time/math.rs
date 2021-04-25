@@ -24,7 +24,8 @@ impl Clock {
 impl<'a, 'b> Sub<&'b Time> for &'a Time {
     type Output = Duration;
 
-    /// Calculates the difference between two times, assuming differences less than 24 hours
+    /// Calculates the difference between two times, assuming differences less
+    /// than 24 hours
     fn sub(self, rhs: &'b Time) -> Self::Output {
         let self_min = self.hour as i16 * 60 + self.min as i16;
         let rhs_min = rhs.hour as i16 * 60 + rhs.min as i16;

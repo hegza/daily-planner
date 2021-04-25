@@ -13,7 +13,8 @@ impl TerminalPos {
         }
     }
 
-    /// Maps cursor to content (0, 0) being top-left of screen. Returns None on out-of-bounds.
+    /// Maps cursor to content (0, 0) being top-left of screen. Returns None on
+    /// out-of-bounds.
     pub fn map_to_content(
         &self,
         render_y: u16,
@@ -94,7 +95,8 @@ impl MappedPos {
         self
     }
 
-    /// Maps content to cursor (0, 0) being the first character on the first item of the day at e.g. position (13, 0). Returns None on out-of-bounds.
+    /// Maps content to cursor (0, 0) being the first character on the first
+    /// item of the day at e.g. position (13, 0). Returns None on out-of-bounds.
     pub fn map_to_terminal(
         &self,
         render_y: u16,

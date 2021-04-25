@@ -4,7 +4,9 @@ use std::{cmp, fmt, str::FromStr};
 
 use crate::template::template::TimeTemplate;
 
-/// Represents naive time. May be used relatively in the span of 24 hours starting from wake-up, e.g. if wake up was at 10:00, 8:30 could be later than 10:00.
+/// Represents naive time. May be used relatively in the span of 24 hours
+/// starting from wake-up, e.g. if wake up was at 10:00, 8:30 could be later
+/// than 10:00.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Time {
     pub hour: u8,

@@ -90,7 +90,8 @@ impl<'t> TemplateTimeBoxParser<'t> {
         }
     }
 
-    /// Figure out which kind of token this one is. State machine. Sets self.timeslot_detected as true if a timeslot is parsed.
+    /// Figure out which kind of token this one is. State machine. Sets
+    /// self.timeslot_detected as true if a timeslot is parsed.
     fn token_kind(&mut self, token: &str) -> TokenKind {
         let token = token.trim();
 
