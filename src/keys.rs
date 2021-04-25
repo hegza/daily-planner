@@ -9,6 +9,13 @@ use crate::{
 };
 
 /*
+    Modes:
+    - Cursor
+    - Insert
+    - Time
+    - GoTo
+    - Delete
+
     Globals:
     - ctrl + q: quit
 
