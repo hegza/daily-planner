@@ -82,14 +82,6 @@ impl MappedPos {
         self.col = column;
         self
     }
-    pub fn next_column(mut self) -> MappedPos {
-        self.col += 1;
-        self
-    }
-    pub fn line(mut self, line: usize) -> MappedPos {
-        self.line = line;
-        self
-    }
     pub fn next_line(mut self) -> MappedPos {
         self.line += 1;
         self

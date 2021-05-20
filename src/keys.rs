@@ -2,7 +2,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{
     bind, bind_key,
-    editor::{
+    editing::{
         command::{Binding, ColumnKind, Command, Dir, Filter, MoveCursor},
         editor::Mode,
     },

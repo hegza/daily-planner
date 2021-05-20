@@ -3,6 +3,7 @@ pub mod command;
 mod command_input;
 pub mod cursor;
 mod cursor_pos;
+mod edit_schedule;
 pub mod editor;
 mod error;
 mod render;

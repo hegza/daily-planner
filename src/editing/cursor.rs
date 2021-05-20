@@ -5,7 +5,7 @@ use std::{
     rc::Rc,
 };
 
-use crate::editor::Result;
+use crate::editing::Result;
 use crossterm::{cursor, QueueableCommand};
 
 use crate::schedule::Schedule;

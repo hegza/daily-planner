@@ -3,11 +3,7 @@ use crossterm::{
     event::{Event, KeyCode},
     QueueableCommand,
 };
-use std::{
-    cell::RefCell,
-    io::{Stdout, Write},
-    rc::Rc,
-};
+use std::io::{Stdout, Write};
 
 use super::{command::Command, text_capture::TextCapture};
 

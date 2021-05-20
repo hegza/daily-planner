@@ -1,18 +1,17 @@
 mod dom;
-mod edit_schedule;
-mod editor;
+mod editing;
 mod keys;
 mod schedule;
-mod template;
+mod template_parsing;
 mod time;
 
 use chrono::NaiveTime;
 use clap::{App, Arg};
 use crossterm::Result;
-use editor::{Editor, EditorLike};
+use editing::{Editor, EditorLike};
 use std::result;
 use std::{fs, str::FromStr};
-use template::{Template, TemplateMeta};
+use template_parsing::{Template, TemplateMeta};
 use time::Duration;
 pub use time::{Clock, Time};
 

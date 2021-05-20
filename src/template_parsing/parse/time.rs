@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::{template::template::TimeTemplate, time::Duration};
+use crate::{template_parsing::template::TimeTemplate, time::Duration};
 
 use super::ParseError;
 
@@ -16,10 +16,10 @@ impl FromStr for TimeTemplate {
 
         let hours_token = time_tokens
             .next()
-            .ok_or(ParseError::CantParseTime(s.to_owned()))?;
+            .ok_or_else(|| ParseError::CantParseTime(s.to_owned()))?;
         let minutes_token = time_tokens
             .next()
-            .ok_or(ParseError::CantParseTime(s.to_owned()))?;
+            .ok_or_else(|| ParseError::CantParseTime(s.to_owned()))?;
 
         // TODO: more involved format detection logic
         let hours = if hours_token == "%H" {

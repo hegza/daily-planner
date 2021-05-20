@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
     dom::{activity::ActivityKind, Activity},
-    template::template::{TimeBoxTemplate, TimeSlotTemplate},
+    template_parsing::template::{TimeBoxTemplate, TimeSlotTemplate},
 };
 
 use super::ParseError;
@@ -84,9 +84,7 @@ impl<'t> TemplateTimeBoxParser<'t> {
 
         match activity {
             Some(activity) => Ok(TimeBoxTemplate { time, activity }),
-            None => {
-                Err(ParseError::NoActivity)
-            }
+            None => Err(ParseError::NoActivity),
         }
     }
 

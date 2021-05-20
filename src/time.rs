@@ -2,7 +2,7 @@ mod math;
 
 use std::{cmp, fmt, str::FromStr};
 
-use crate::template::template::TimeTemplate;
+use crate::template_parsing::template::TimeTemplate;
 
 /// Represents naive time. May be used relatively in the span of 24 hours
 /// starting from wake-up, e.g. if wake up was at 10:00, 8:30 could be later

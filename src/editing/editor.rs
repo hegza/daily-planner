@@ -223,9 +223,7 @@ impl Editor {
                                 .as_mut()
                                 .expect("must have cursor when editing schedule");
                             let schedule = &mut self.schedule;
-                            let redraw =
-                                schedule.edit_content(&key_ev, cursor, &mut self.stdout)?;
-                            redraw
+                            schedule.edit_content(&key_ev, cursor, &mut self.stdout)?
                         } else {
                             // redraw
                             false
@@ -544,7 +542,7 @@ impl Editor {
                 true
             }
             Command::OpenCommandInput => {
-                self.open_command_input();
+                self.open_command_input()?;
                 true
             }
         };

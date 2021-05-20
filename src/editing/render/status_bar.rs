@@ -6,12 +6,12 @@ use crossterm::{
     QueueableCommand,
 };
 
-use crate::editor::editor::{Mode, StatusBar, TimeMode};
+use crate::editing::editor::{Mode, StatusBar, TimeMode};
 
 use super::Render;
 
 impl Render for StatusBar {
-    fn render(&self, stdout: &mut std::io::Stdout) -> crate::editor::Result<()> {
+    fn render(&self, stdout: &mut std::io::Stdout) -> crate::editing::Result<()> {
         let rc_mode = self.mode.upgrade().unwrap();
         let cell_mode: &RefCell<Mode> = rc_mode.borrow();
         let mode: &Mode = &cell_mode.borrow();
