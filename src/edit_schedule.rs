@@ -3,7 +3,7 @@ use std::io::Stdout;
 use crossterm::event::{KeyEvent, KeyModifiers};
 
 use crate::{
-    dom::{timebox::AdjustPolicy, TimeBox, TimeSlotKind},
+    dom::{timebox::AdjustPolicy, TimeBox},
     editor::{cursor::ContentCursor, Result},
     schedule::Schedule,
     time::Duration,

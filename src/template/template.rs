@@ -63,10 +63,7 @@ impl Template {
 
 impl TimeBoxTemplate {
     fn time_box(&self, cur_time: &mut Time, span_len: &Duration) -> TimeBox {
-        let time = match &self.time {
-            // No associated time
-            None => None,
-            Some(time_slot_kind) => Some(match time_slot_kind {
+        let time = self.time.as_ref().map(|time_slot_kind| match time_slot_kind {
                 TimeSlotTemplate::Time(time) => match time {
                     // %H:%M, use current time
                     TimeTemplate::TimeFormat => TimeSlotKind::Time(*cur_time),
@@ -104,8 +101,7 @@ impl TimeBoxTemplate {
                     };
                     TimeSlotKind::Span(start_time, end_time)
                 }
-            }),
-        };
+            });
 
         let activity = self.activity.clone();
 

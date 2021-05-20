@@ -1,11 +1,15 @@
-use crossterm::{cursor, event::Event, QueueableCommand};
+use crossterm::{
+    cursor,
+    event::{Event, KeyCode},
+    QueueableCommand,
+};
 use std::{
     cell::RefCell,
     io::{Stdout, Write},
     rc::Rc,
 };
 
-use super::{command::Command, cursor::ContentCursor, text_capture::TextCapture};
+use super::{command::Command, text_capture::TextCapture};
 
 /// A modal command input that captures stdin and cursor while it's active.
 #[derive(Debug)]
@@ -27,21 +31,28 @@ impl CommandInput {
             let ev = crossterm::event::read().unwrap();
             let redraw = match ev {
                 Event::Key(k) => {
+                    // Enter breaks out of command input
+                    if k.code == KeyCode::Enter {
+                        break;
+                    }
+
                     let cursor_move = self.cur_input.input(&k);
 
-                    if cursor_move > 0 {
-                        stdout
+                    use std::cmp::Ordering;
+                    match cursor_move.cmp(&0) {
+                        Ordering::Greater => stdout
                             .queue(cursor::MoveRight(cursor_move as u16))
                             .unwrap()
                             .flush()
-                            .unwrap()
-                    } else if cursor_move < 0 {
-                        stdout
+                            .unwrap(),
+                        Ordering::Equal => {}
+                        Ordering::Less => stdout
                             .queue(cursor::MoveLeft((-cursor_move) as u16))
                             .unwrap()
                             .flush()
-                            .unwrap()
+                            .unwrap(),
                     }
+
                     true
                 }
                 Event::Mouse(_) => false,
@@ -55,6 +66,6 @@ impl CommandInput {
     }
 }
 
-fn input_into_command(text: &str) -> Option<Command> {
+fn input_into_command(_text: &str) -> Option<Command> {
     None
 }

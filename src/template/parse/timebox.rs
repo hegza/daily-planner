@@ -47,7 +47,7 @@ impl<'t> TemplateTimeBoxParser<'t> {
         }
 
         let next = *first_token.unwrap();
-        let first_char = next.trim().chars().nth(0).unwrap();
+        let first_char = next.trim().chars().next().unwrap();
         if MARKDOWN_LIST_TOKENS.contains(&first_char) {
             // Skip the list token
             self.tokens.next().unwrap();
@@ -85,7 +85,7 @@ impl<'t> TemplateTimeBoxParser<'t> {
         match activity {
             Some(activity) => Ok(TimeBoxTemplate { time, activity }),
             None => {
-                return Err(ParseError::NoActivity);
+                Err(ParseError::NoActivity)
             }
         }
     }
@@ -96,7 +96,7 @@ impl<'t> TemplateTimeBoxParser<'t> {
         let token = token.trim();
 
         // List initializer, e.g. '-' or '*'
-        if token.len() == 1 && MARKDOWN_LIST_TOKENS.contains(&token.chars().nth(0).unwrap()) {
+        if token.len() == 1 && MARKDOWN_LIST_TOKENS.contains(&token.chars().next().unwrap()) {
             return TokenKind::ListInitializer;
         }
 
@@ -109,17 +109,15 @@ impl<'t> TemplateTimeBoxParser<'t> {
         }
 
         // If no kind is detected for activity, try if one can be parsed
-        if !self.activity_kind_identified {
-            if token.chars().last().unwrap() == ':' {
-                let activity_maybe = token
-                    .chars()
-                    .take(token.chars().count() - 1)
-                    .collect::<String>();
-                if let Ok(activity_kind) = ActivityKind::from_str(&activity_maybe) {
-                    if activity_kind != ActivityKind::Unknown {
-                        self.activity_kind_identified = true;
-                        return TokenKind::ActivityKind(activity_kind);
-                    }
+        if !self.activity_kind_identified && token.ends_with(':') {
+            let activity_maybe = token
+                .chars()
+                .take(token.chars().count() - 1)
+                .collect::<String>();
+            if let Ok(activity_kind) = ActivityKind::from_str(&activity_maybe) {
+                if activity_kind != ActivityKind::Unknown {
+                    self.activity_kind_identified = true;
+                    return TokenKind::ActivityKind(activity_kind);
                 }
             }
         }

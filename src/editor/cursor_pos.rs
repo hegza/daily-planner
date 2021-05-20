@@ -109,7 +109,7 @@ impl MappedPos {
         let out_y = self.line as u16 + render_y;
 
         let content_on_line = &schedule.timeboxes[self.line].activity.summary;
-        if self.col >= content_on_line.chars().count() + 1 {
+        if self.col > content_on_line.chars().count() {
             return None;
         }
 

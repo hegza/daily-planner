@@ -150,13 +150,13 @@ pub const BINDINGS: &[Binding] = &[
         KeyModifiers::SHIFT,
         Command::PasteAbove,
         Filter::Mode(Mode::Cursor)
-    ),
-    /*bind!(
-        KeyCode::Char(':'),
-        KeyModifiers::NONE,
-        Command::OpenCommandInput,
-        Filter::Mode(Mode::Cursor)
-    ),*/
+    ), /*
+       bind!(
+           KeyCode::Char(':'),
+           KeyModifiers::NONE,
+           Command::OpenCommandInput,
+           Filter::Mode(Mode::Cursor)
+       ),*/
     // Time-mode
     bind_key!('i', Command::InsertMode, Filter::Mode(Mode::Time)),
     bind_key!('t', Command::MoveTimeCursor, Filter::Mode(Mode::Time)),

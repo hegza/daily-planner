@@ -1,7 +1,6 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::{
     cell::{Ref, RefCell},
-    ops::{Deref, DerefMut},
     rc::Rc,
 };
 
@@ -55,7 +54,7 @@ impl TextCapture {
                 };
 
                 // Insert the character into captured text at cursor position
-                self.text.borrow_mut().insert(self.cursor, c.into());
+                self.text.borrow_mut().insert(self.cursor, c);
                 // Return cursor movement: +1
                 1
             }

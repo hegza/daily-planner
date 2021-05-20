@@ -31,7 +31,7 @@ impl Render for StatusBar {
             Mode::Delete => "delete +",
         };
 
-        let content = format!("{}", mode_str);
+        let content = mode_str.to_string();
 
         let styled = style(&content);
         stdout

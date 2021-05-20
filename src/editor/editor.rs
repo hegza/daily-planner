@@ -198,7 +198,7 @@ impl Editor {
             let redraw = match ev {
                 Event::Key(key_ev) => {
                     // Determine command
-                    let editor_command = Command::map(key_ev.clone(), self);
+                    let editor_command = Command::map(key_ev, self);
                     let mut redraw = false;
 
                     // Return to parent mode on command for transient modes like 'g' and 'd'
@@ -529,7 +529,7 @@ impl Editor {
 
                 let ntime = match time {
                     Some(slot) => match slot {
-                        TimeSlotKind::Time(t) => TimeSlotKind::Span(t.clone(), t.clone()),
+                        TimeSlotKind::Time(t) => TimeSlotKind::Span(*t, *t),
                         TimeSlotKind::Span(start, _end) => TimeSlotKind::Time(*start),
                     },
                     None => {
