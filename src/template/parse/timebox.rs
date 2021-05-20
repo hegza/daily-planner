@@ -5,7 +5,7 @@ use std::{
 };
 
 use crate::{
-    activity::{activity::ActivityKind, Activity},
+    dom::{activity::ActivityKind, Activity},
     template::template::{TimeBoxTemplate, TimeSlotTemplate},
 };
 

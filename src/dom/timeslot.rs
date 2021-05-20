@@ -39,7 +39,7 @@ impl fmt::Display for TimeSlotKind {
         match self {
             TimeSlotKind::Time(t) => t.fmt(f),
             TimeSlotKind::Span(start, end) => {
-                let len: Duration = Duration::from(end - start);
+                let len: Duration = end - start;
                 f.write_str(&format!("{}--{} ({})", start, end, len))
             }
         }

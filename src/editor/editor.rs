@@ -18,7 +18,7 @@ use crossterm::{
 };
 
 use crate::{
-    activity::{timebox::AdjustPolicy, TimeBox, TimeSlotKind},
+    dom::{timebox::AdjustPolicy, TimeBox, TimeSlotKind},
     schedule::Schedule,
     time::Duration,
 };

@@ -1,7 +1,7 @@
 use chrono::NaiveTime;
 
 use crate::{
-    activity::{Activity, TimeBox, TimeSlotKind},
+    dom::{Activity, TimeBox, TimeSlotKind},
     schedule::Schedule,
     time::Duration,
     Time,

@@ -1,9 +1,9 @@
-use std::{cmp::Ordering, io::Stdout};
+use std::io::Stdout;
 
 use crossterm::event::{KeyEvent, KeyModifiers};
 
 use crate::{
-    activity::{timebox::AdjustPolicy, TimeBox, TimeSlotKind},
+    dom::{timebox::AdjustPolicy, TimeBox, TimeSlotKind},
     editor::{cursor::ContentCursor, Result},
     schedule::Schedule,
     time::Duration,
@@ -43,10 +43,10 @@ impl Schedule {
                 let c = if modifiers.intersects(KeyModifiers::SHIFT) {
                     c.to_uppercase().next().unwrap()
                 } else {
-                    c.clone()
+                    c
                 };
 
-                edit_text.insert(char_idx, c.into());
+                edit_text.insert(char_idx, c);
                 // Alternative implementation for insert
                 /*
                 let (start, end) = edit_text.split_at(char_idx);

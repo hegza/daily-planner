@@ -1,4 +1,4 @@
-mod activity;
+mod dom;
 mod edit_schedule;
 mod editor;
 mod keys;

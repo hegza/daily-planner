@@ -1,6 +1,6 @@
 use super::Render;
 use crate::{
-    activity::{timebox::AdjustPolicy, TimeBox, TimeSlotKind},
+    dom::{timebox::AdjustPolicy, TimeBox, TimeSlotKind},
     schedule::Schedule,
 };
 use chrono::NaiveTime;

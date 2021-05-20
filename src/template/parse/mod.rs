@@ -5,7 +5,7 @@ use chrono::format::parse;
 use std::str::FromStr;
 use thiserror::Error;
 
-use crate::activity::activity::{ActivityDeserializationError, ActivityKind};
+use crate::dom::activity::{ActivityDeserializationError, ActivityKind};
 
 use super::{
     template::{TimeBoxTemplate, TimeSlotTemplate, TimeTemplate},
