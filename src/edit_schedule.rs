@@ -10,7 +10,7 @@ use crate::{
 };
 
 impl Schedule {
-    /// Returns true if something was changed
+    /// Changes the content based on the input key. Returns true if something was changed.
     pub fn edit_content(
         &mut self,
         key: &KeyEvent,

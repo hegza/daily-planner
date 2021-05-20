@@ -1,10 +1,12 @@
 mod api;
 pub mod command;
+mod command_input;
 pub mod cursor;
 mod cursor_pos;
 pub mod editor;
 mod error;
 mod render;
+mod text_capture;
 
 pub use api::EditorLike;
 pub use editor::Editor;

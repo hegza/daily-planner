@@ -47,6 +47,7 @@ pub enum Command {
     DeleteTime,
     GoToColumn(ColumnKind),
     CutCurrentLine,
+    OpenCommandInput,
     Multi(&'static [Command]),
 }
 

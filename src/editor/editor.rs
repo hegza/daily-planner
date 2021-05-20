@@ -6,6 +6,7 @@ use std::{
 
 use super::{
     command::{self, Command},
+    command_input::CommandInput,
     cursor::ContentCursor,
     render::Render,
     Result,
@@ -21,6 +22,12 @@ use crate::{
     schedule::Schedule,
     time::Duration,
 };
+
+macro_rules! ref_cell {
+    ( $inner:expr ) => {
+        Rc::new(RefCell::new($inner))
+    };
+}
 
 #[derive(Debug)]
 pub struct Editor {
@@ -39,6 +46,7 @@ pub struct Editor {
     time_cursor: usize,
     clipboard: Option<TimeBox>,
     quit: bool,
+    command_input: Option<CommandInput>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -75,11 +83,11 @@ impl Mode {
 
 impl Editor {
     pub fn with_stdout(stdout: Stdout, schedule: Schedule) -> Editor {
-        let mode = Rc::new(RefCell::new(Mode::Cursor));
-        let time_mode = Rc::new(RefCell::new(TimeMode::Relative));
+        let mode = ref_cell!(Mode::Cursor);
+        let time_mode = ref_cell!(TimeMode::Relative);
 
-        let schedule_y = Rc::new(RefCell::new(0));
-        let schedule_h = Rc::new(RefCell::new(0));
+        let schedule_y = ref_cell!(0);
+        let schedule_h = ref_cell!(0);
         Editor {
             stdout,
             schedule,
@@ -96,6 +104,7 @@ impl Editor {
             clipboard: None,
             quit: false,
             time_cursor: 0,
+            command_input: None,
         }
     }
 
@@ -120,7 +129,7 @@ impl Editor {
     fn render(&mut self) -> Result<()> {
         {
             // Rename binding, we all know what stdout is
-            let stdout = &mut self.stdout;
+            let mut stdout = &mut self.stdout;
 
             // Clear screen and move cursor to top-left
             stdout
@@ -131,7 +140,7 @@ impl Editor {
             // Render schedule while measuring it's height
             let y = cursor::position()?.1;
             self.schedule_y.replace(y);
-            self.schedule.render(stdout)?;
+            self.schedule.render(&mut stdout)?;
             let h = cursor::position()?.1 - y;
             self.schedule_h.replace(h);
 
@@ -170,7 +179,7 @@ impl Editor {
                 .queue(style::Print("ctrl+q to exit"))?
                 .queue(cursor::MoveToNextLine(1))?;
 
-            self.status_bar.render(stdout)?;
+            self.status_bar.render(&mut stdout)?;
 
             stdout.flush()?;
         }
@@ -534,8 +543,23 @@ impl Editor {
 
                 true
             }
+            Command::OpenCommandInput => {
+                self.open_command_input();
+                true
+            }
         };
         Ok(redraw)
+    }
+
+    fn open_command_input(&mut self) -> Result<()> {
+        let mut input = CommandInput::default();
+
+        if let Some(cmd) = input.capture(&mut self.stdout) {
+            self.act(&cmd)?;
+            self.render().expect("cannot redraw");
+        }
+
+        Ok(())
     }
 
     fn item_on_cursor_mut(&mut self) -> &mut TimeBox {
