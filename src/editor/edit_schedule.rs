@@ -4,7 +4,7 @@ use crossterm::event::{KeyEvent, KeyModifiers};
 
 use crate::{
     dom::{timebox::AdjustPolicy, TimeBox},
-    editing::{cursor::ContentCursor, Result},
+    editor::{cursor::ContentCursor, Result},
     schedule::Schedule,
     time::Duration,
 };

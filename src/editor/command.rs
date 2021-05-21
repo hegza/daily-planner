@@ -2,7 +2,7 @@ use crossterm::event::KeyEvent;
 
 use crate::keys::BINDINGS;
 
-use super::{editor::Mode, Editor};
+use super::{state::Mode, State};
 
 #[macro_export]
 macro_rules! bind {
@@ -108,7 +108,7 @@ impl Binding {
 
 impl Command {
     /// None -> Command::Noop.
-    pub fn map(key_event: KeyEvent, editor: &Editor) -> Option<Command> {
+    pub fn map(key_event: KeyEvent, editor: &State) -> Option<Command> {
         BINDINGS
             .iter()
             .find_map(|binding| binding.match_command(&key_event, &editor.mode.borrow()))

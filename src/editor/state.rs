@@ -30,7 +30,7 @@ macro_rules! ref_cell {
 }
 
 #[derive(Debug)]
-pub struct Editor {
+pub struct State {
     stdout: Stdout,
     cursor: Option<ContentCursor>,
     /// The y-position of the cursor was when the schedule started to render
@@ -81,14 +81,14 @@ impl Mode {
     }
 }
 
-impl Editor {
-    pub fn with_stdout(stdout: Stdout, schedule: Schedule) -> Editor {
+impl State {
+    pub fn with_stdout(stdout: Stdout, schedule: Schedule) -> State {
         let mode = ref_cell!(Mode::Cursor);
         let time_mode = ref_cell!(TimeMode::Relative);
 
         let schedule_y = ref_cell!(0);
         let schedule_h = ref_cell!(0);
-        Editor {
+        State {
             stdout,
             schedule,
             schedule_y,

@@ -1,5 +1,5 @@
 mod dom;
-mod editing;
+mod editor;
 mod keys;
 mod schedule;
 mod template_parsing;
@@ -8,7 +8,7 @@ mod time;
 use chrono::NaiveTime;
 use clap::{App, Arg};
 use crossterm::Result;
-use editing::{Editor, EditorLike};
+use editor::{EditorLike, State};
 use std::result;
 use std::{fs, str::FromStr};
 use template_parsing::{Template, TemplateMeta};
@@ -73,7 +73,7 @@ fn main() -> Result<()> {
     let schedule = template.schedule(meta);
 
     // Create the editor
-    let mut editor = Editor::spawn(schedule)?;
+    let mut editor = State::spawn(schedule)?;
 
     // Capture IO in main loop
     editor.attach();

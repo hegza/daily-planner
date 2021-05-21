@@ -4,13 +4,13 @@ mod command_input;
 pub mod cursor;
 mod cursor_pos;
 mod edit_schedule;
-pub mod editor;
 mod error;
 mod render;
+pub mod state;
 mod text_capture;
 
 pub use api::EditorLike;
-pub use editor::Editor;
 pub use error::Error;
+pub use state::State;
 
 pub type Result<T> = std::result::Result<T, Error>;

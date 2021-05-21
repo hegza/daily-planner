@@ -16,7 +16,7 @@ use std::{
 use strfmt::strfmt;
 
 impl Render for Schedule {
-    fn render(&self, stdout: &mut Stdout) -> crate::editing::Result<()> {
+    fn render(&self, stdout: &mut Stdout) -> crate::editor::Result<()> {
         let mut circ_sector = if self.sunrise.is_some() && self.sunset.is_some() {
             CircadianSector::PreDawn
         } else {

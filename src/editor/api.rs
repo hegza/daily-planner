@@ -1,6 +1,6 @@
 use std::{io::stdout, panic};
 
-use super::Editor;
+use super::State;
 use crate::schedule::Schedule;
 use backtrace::Backtrace;
 use crossterm::{
@@ -16,9 +16,9 @@ where
     fn attach(&mut self);
 }
 
-impl EditorLike<Editor> for Editor {
+impl EditorLike<State> for State {
     /// Creates the editor, attaches to stdout and sets raw mode
-    fn spawn(schedule: Schedule) -> Result<Editor> {
+    fn spawn(schedule: Schedule) -> Result<State> {
         let stdout = stdout();
 
         // Enable raw mode and disable it on panic
@@ -31,7 +31,7 @@ impl EditorLike<Editor> for Editor {
             eprintln!("{}", panic_info);
         }));
 
-        let editor = Editor::with_stdout(stdout, schedule);
+        let editor = State::with_stdout(stdout, schedule);
 
         Ok(editor)
     }
@@ -52,7 +52,7 @@ impl EditorLike<Editor> for Editor {
     }
 }
 
-impl Drop for Editor {
+impl Drop for State {
     fn drop(&mut self) {
         disable_raw_mode().unwrap();
     }
