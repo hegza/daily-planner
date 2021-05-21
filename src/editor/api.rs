@@ -12,13 +12,13 @@ pub trait EditorLike<Ed>
 where
     Ed: Sized,
 {
-    fn spawn(schedule: Schedule) -> Result<Ed>;
+    fn try_from_schedule(schedule: Schedule) -> Result<Ed>;
     fn attach(&mut self);
 }
 
 impl EditorLike<State> for State {
     /// Creates the editor, attaches to stdout and sets raw mode
-    fn spawn(schedule: Schedule) -> Result<State> {
+    fn try_from_schedule(schedule: Schedule) -> Result<State> {
         let stdout = stdout();
 
         // Enable raw mode and disable it on panic

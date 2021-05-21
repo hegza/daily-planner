@@ -4,7 +4,7 @@ use crate::{
     bind, bind_key,
     editor::{
         command::{Binding, ColumnKind, Command, Dir, Filter, MoveCursor},
-        state::Mode,
+        Mode,
     },
 };
 

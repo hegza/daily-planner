@@ -1,9 +1,3 @@
-use std::{
-    cell::RefCell,
-    io::{Stdout, Write},
-    rc::{Rc, Weak},
-};
-
 use super::{
     command::{self, Command},
     command_input::CommandInput,
@@ -11,16 +5,21 @@ use super::{
     render::Render,
     Result,
 };
+use crate::{
+    dom::{timebox::AdjustPolicy, TimeBox, TimeSlotKind},
+    editor::Mode,
+    schedule::Schedule,
+    time::Duration,
+};
 use crossterm::{
     cursor,
     event::{read, Event},
     style, terminal, ExecutableCommand, QueueableCommand,
 };
-
-use crate::{
-    dom::{timebox::AdjustPolicy, TimeBox, TimeSlotKind},
-    schedule::Schedule,
-    time::Duration,
+use std::{
+    cell::RefCell,
+    io::{Stdout, Write},
+    rc::{Rc, Weak},
 };
 
 macro_rules! ref_cell {
@@ -47,38 +46,6 @@ pub struct State {
     clipboard: Option<TimeBox>,
     quit: bool,
     command_input: Option<CommandInput>,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum Mode {
-    // Move cursor, use general commands
-    Cursor,
-    // Write content
-    Insert,
-    // Adjust time
-    Time,
-    // Go to something (transient)
-    GoTo,
-    // Delete something (transient)
-    Delete,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum TimeMode {
-    Relative,
-    Absolute,
-}
-
-impl Mode {
-    fn is_transient(&self) -> bool {
-        match self {
-            Mode::Cursor => false,
-            Mode::Insert => false,
-            Mode::Time => false,
-            Mode::GoTo => true,
-            Mode::Delete => true,
-        }
-    }
 }
 
 impl State {
@@ -574,4 +541,9 @@ impl State {
 pub struct StatusBar {
     pub mode: Weak<RefCell<Mode>>,
     pub time_mode: Weak<RefCell<TimeMode>>,
+}
+#[derive(Clone, Debug, PartialEq)]
+pub enum TimeMode {
+    Relative,
+    Absolute,
 }

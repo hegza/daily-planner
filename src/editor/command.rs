@@ -2,7 +2,7 @@ use crossterm::event::KeyEvent;
 
 use crate::keys::BINDINGS;
 
-use super::{state::Mode, State};
+use super::{Mode, State};
 
 #[macro_export]
 macro_rules! bind {

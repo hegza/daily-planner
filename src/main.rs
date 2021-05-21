@@ -73,7 +73,7 @@ fn main() -> Result<()> {
     let schedule = template.schedule(meta);
 
     // Create the editor
-    let mut editor = State::spawn(schedule)?;
+    let mut editor = State::try_from_schedule(schedule)?;
 
     // Capture IO in main loop
     editor.attach();

@@ -6,7 +6,10 @@ use crossterm::{
     QueueableCommand,
 };
 
-use crate::editor::state::{Mode, StatusBar, TimeMode};
+use crate::editor::{
+    state::{StatusBar, TimeMode},
+    Mode,
+};
 
 use super::Render;
 
