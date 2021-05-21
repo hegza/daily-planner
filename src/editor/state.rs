@@ -80,7 +80,7 @@ impl State {
         self.render()?;
 
         // Create cursor at top-left
-        let cursor = ContentCursor::init(
+        let cursor = ContentCursor::create_at_top_left(
             self.schedule_y.clone(),
             self.schedule_h.clone(),
             &mut self.stdout,

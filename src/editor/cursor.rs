@@ -20,12 +20,14 @@ pub struct ContentCursor {
     schedule_h: Rc<RefCell<u16>>,
 }
 
+/// Cursor position in absolute terminal coordinates
 #[derive(Debug, Clone, Copy)]
 pub struct TerminalPos {
     pub hpos: u16,
     pub vpos: u16,
 }
 
+/// Cursor position mapped to editor content
 #[derive(Debug, Clone)]
 pub struct MappedPos {
     pub col: usize,
@@ -33,7 +35,7 @@ pub struct MappedPos {
 }
 
 impl ContentCursor {
-    pub fn init(
+    pub fn create_at_top_left(
         schedule_y: Rc<RefCell<u16>>,
         schedule_h: Rc<RefCell<u16>>,
         stdout: &mut Stdout,
@@ -43,6 +45,14 @@ impl ContentCursor {
             .map_to_terminal(*schedule_y.borrow(), *schedule_h.borrow(), schedule)
             .unwrap();
 
+        Self::create_at(pos, schedule_y, schedule_h, stdout)
+    }
+    pub fn create_at(
+        pos: TerminalPos,
+        schedule_y: Rc<RefCell<u16>>,
+        schedule_h: Rc<RefCell<u16>>,
+        stdout: &mut Stdout,
+    ) -> ContentCursor {
         let hghost = pos.hpos;
 
         // Move the cursor to the start of the schedule
