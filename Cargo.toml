@@ -4,6 +4,11 @@ version = "0.1.1"
 authors = ["Henri Lunnikivi <henri.lunnikivi@tuni.fi>"]
 edition = "2018"
 
+[lib]
+
+[[bin]]
+name = "daily-planner"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

@@ -1,4 +1,4 @@
-use std::{io::stdout, panic};
+use std::{io::Stdout, panic};
 
 use super::State;
 use crate::schedule::Schedule;
@@ -12,15 +12,13 @@ pub trait EditorLike<Ed>
 where
     Ed: Sized,
 {
-    fn try_from_schedule(schedule: Schedule) -> Result<Ed>;
+    fn try_from_schedule(schedule: Schedule, stdout: Stdout) -> Result<Ed>;
     fn attach(&mut self);
 }
 
 impl EditorLike<State> for State {
     /// Creates the editor, attaches to stdout and sets raw mode
-    fn try_from_schedule(schedule: Schedule) -> Result<State> {
-        let stdout = stdout();
-
+    fn try_from_schedule(schedule: Schedule, stdout: Stdout) -> Result<State> {
         // Enable raw mode and disable it on panic
         enable_raw_mode()?;
         panic::set_hook(Box::new(|panic_info| {

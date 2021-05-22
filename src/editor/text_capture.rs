@@ -4,7 +4,7 @@ use std::{
     rc::Rc,
 };
 
-/// Captures and maintains textual input and a character cursor from key events passed to it. Can maintain it's own buffer or borrow an external one.
+/// Captures and maintains text input and a character cursor from key events passed to it. Can maintain it's own buffer or borrow an external one.
 #[derive(Debug)]
 pub struct TextCapture {
     text: Rc<RefCell<String>>,

@@ -5,42 +5,14 @@ mod schedule;
 mod template_parsing;
 mod time;
 
-use chrono::NaiveTime;
 use clap::{App, Arg};
 use crossterm::Result;
 use editor::{EditorLike, State};
-use std::result;
+use std::io::stdout;
 use std::{fs, str::FromStr};
 use template_parsing::{Template, TemplateMeta};
 use time::Duration;
 pub use time::{Clock, Time};
-
-fn get_sunrise_sunset_online() -> result::Result<(NaiveTime, NaiveTime), ureq::Error> {
-    // HACK: dawn/sunset REST testing
-    let lat = "61.441443";
-    let lng = "23.8658000";
-    let today = chrono::Local::now().date().naive_local();
-    let body_json: String = ureq::get(&format!(
-        "https://api.sunrise-sunset.org/json?lat={}&lng={}&date={}",
-        lat, lng, today
-    ))
-    .call()?
-    .into_string()
-    .unwrap();
-
-    let data: serde_json::Value = serde_json::from_str(&body_json).unwrap();
-    let results = data.get("results").unwrap();
-    let sunrise = chrono::NaiveTime::parse_from_str(
-        results.get("sunrise").unwrap().as_str().unwrap(),
-        "%I:%M:%S %p",
-    )
-    .unwrap()
-        + chrono::Duration::hours(2);
-    let sunset_str = results.get("sunset").unwrap().as_str().unwrap();
-    let sunset = chrono::NaiveTime::parse_from_str(sunset_str, "%I:%M:%S %p").unwrap()
-        + chrono::Duration::hours(2);
-    Ok((sunrise, sunset))
-}
 
 fn main() -> Result<()> {
     let matches = App::new("daily-planner")
@@ -63,7 +35,7 @@ fn main() -> Result<()> {
     let template = Template::from_str(&template_text).unwrap();
 
     // Create schedule from template
-    let sunrise_sunset = get_sunrise_sunset_online();
+    let sunrise_sunset = daily_planner::twilight::get_sunrise_sunset_online();
     let meta = TemplateMeta {
         wake_up,
         span_len: Duration::hm(3, 15),
@@ -73,7 +45,8 @@ fn main() -> Result<()> {
     let schedule = template.schedule(meta);
 
     // Create the editor
-    let mut editor = State::try_from_schedule(schedule)?;
+    let stdout = stdout();
+    let mut editor = State::try_from_schedule(schedule, stdout)?;
 
     // Capture IO in main loop
     editor.attach();
