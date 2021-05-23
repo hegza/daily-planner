@@ -13,6 +13,7 @@ pub mod text_capture;
 pub use api::EditorLike;
 pub use error::Error;
 pub use mode::Mode;
+pub use render::Draw;
 pub use state::State;
 
 pub type Result<T> = std::result::Result<T, Error>;

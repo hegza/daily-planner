@@ -19,7 +19,7 @@ pub struct CommandInput {
 impl Default for CommandInput {
     fn default() -> Self {
         CommandInput {
-            cur_input: TextCapture::owned(),
+            cur_input: TextCapture::owned(text_capture::InputSource::Stdio(None)),
         }
     }
 }
@@ -35,7 +35,7 @@ impl CommandInput {
                         break;
                     }
 
-                    let cursor_move = self.cur_input.input(&k);
+                    let (redraw, cursor_move) = self.cur_input.input(&k);
 
                     use std::cmp::Ordering;
                     match cursor_move.cmp(&0) {
@@ -52,7 +52,7 @@ impl CommandInput {
                             .unwrap(),
                     }
 
-                    true
+                    redraw
                 }
                 Event::Mouse(_) => false,
                 Event::Resize(_, _) => false,
