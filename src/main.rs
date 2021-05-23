@@ -4,8 +4,9 @@ use daily_planner::editor::{EditorLike, State};
 use daily_planner::template_parsing::{Template, TemplateMeta};
 use daily_planner::time::Duration;
 pub use daily_planner::time::{Clock, Time};
+use fs_err as fs;
 use std::io::stdout;
-use std::{fs, str::FromStr};
+use std::str::FromStr;
 
 fn main() -> Result<()> {
     let matches = App::new("daily-planner")
