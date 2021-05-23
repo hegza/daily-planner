@@ -17,7 +17,10 @@ pub use time::{Clock, Time};
 fn main() -> Result<()> {
     let matches = App::new("daily-planner")
         .arg(Arg::from_usage(
-            "-w --wake-up=[TIME] 'Sets the wake-up time. It will auto-round to half an hour.'",
+            "-w --wake-up=[TIME] 'Sets the wake-up time. Will be rounded to next half an hour.'",
+        ))
+        .arg(Arg::from_usage(
+            "-t --template=[FILE] 'Sets the schedule template.'",
         ))
         .get_matches();
 
@@ -31,7 +34,12 @@ fn main() -> Result<()> {
     .round_to_half();
 
     // Load template
-    let template_text = fs::read_to_string("data/template.md").unwrap();
+    let default_template_file = "data/template.md";
+    let template_file = match matches.value_of("template") {
+        Some(f) => f,
+        None => default_template_file,
+    };
+    let template_text = fs::read_to_string(template_file).expect("could not read file");
     let template = Template::from_str(&template_text).unwrap();
 
     // Create schedule from template
