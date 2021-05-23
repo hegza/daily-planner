@@ -1,18 +1,11 @@
-mod dom;
-mod editor;
-mod keys;
-mod schedule;
-mod template_parsing;
-mod time;
-
 use clap::{App, Arg};
 use crossterm::Result;
-use editor::{EditorLike, State};
+use daily_planner::editor::{EditorLike, State};
+use daily_planner::template_parsing::{Template, TemplateMeta};
+use daily_planner::time::Duration;
+pub use daily_planner::time::{Clock, Time};
 use std::io::stdout;
 use std::{fs, str::FromStr};
-use template_parsing::{Template, TemplateMeta};
-use time::Duration;
-pub use time::{Clock, Time};
 
 fn main() -> Result<()> {
     let matches = App::new("daily-planner")

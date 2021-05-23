@@ -1,6 +1,6 @@
 use chrono::NaiveTime;
 
-use crate::{dom::TimeBox, editor::cursor::ContentCursor, Time};
+use crate::{dom::TimeBox, editor::cursor::ContentCursor, time::Time};
 
 /// Main data structure
 #[derive(Clone, Debug)]

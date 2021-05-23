@@ -4,7 +4,7 @@ use crate::{
     dom::{Activity, TimeBox, TimeSlotKind},
     schedule::Schedule,
     time::Duration,
-    Time,
+    time::Time,
 };
 
 /// Represents a daily template of activities, loadable from a file.
@@ -63,7 +63,10 @@ impl Template {
 
 impl TimeBoxTemplate {
     fn time_box(&self, cur_time: &mut Time, span_len: &Duration) -> TimeBox {
-        let time = self.time.as_ref().map(|time_slot_kind| match time_slot_kind {
+        let time = self
+            .time
+            .as_ref()
+            .map(|time_slot_kind| match time_slot_kind {
                 TimeSlotTemplate::Time(time) => match time {
                     // %H:%M, use current time
                     TimeTemplate::TimeFormat => TimeSlotKind::Time(*cur_time),

@@ -5,7 +5,10 @@ use crossterm::{
 };
 use std::io::{Stdout, Write};
 
-use super::{command::Command, text_capture::TextCapture};
+use super::{
+    command::Command,
+    text_capture::{self, TextCapture},
+};
 
 /// A modal command input that captures stdin and cursor while it's active.
 #[derive(Debug)]

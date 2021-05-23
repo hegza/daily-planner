@@ -1,6 +1,6 @@
 use std::{cmp, fmt};
 
-use crate::{schedule::Schedule, time::Duration, Time};
+use crate::{schedule::Schedule, time::Duration, time::Time};
 
 /// A time or a span of time.
 #[derive(Clone, Debug, PartialEq)]

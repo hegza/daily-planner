@@ -1,5 +1,3 @@
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
-
 use crate::{
     bind, bind_key,
     editor::{
@@ -7,6 +5,7 @@ use crate::{
         Mode,
     },
 };
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 /*
     Modes:

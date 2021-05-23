@@ -8,7 +8,7 @@ mod error;
 mod mode;
 mod render;
 pub mod state;
-mod text_capture;
+pub mod text_capture;
 
 pub use api::EditorLike;
 pub use error::Error;
