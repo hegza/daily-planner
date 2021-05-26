@@ -132,7 +132,7 @@ impl State {
                     TimeSlotKind::Time(t) => t,
                     TimeSlotKind::Span(_, end) => end,
                 };
-                let time_left = first_time - last_time;
+                let time_left: Duration = &self.schedule.wake_up_tomorrow - last_time;
                 stdout
                     .queue(style::Print(format!(
                         "{} left unscheduled / sleep, wake-up at {}",

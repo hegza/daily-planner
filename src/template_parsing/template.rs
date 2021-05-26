@@ -38,7 +38,8 @@ pub enum TimeTemplate {
 
 // <!-- Conversions to concrete types -->
 pub struct TemplateMeta {
-    pub wake_up: Time,
+    pub wake_up_today: Time,
+    pub wake_up_tomorrow: Time,
     pub span_len: Duration,
     pub sunrise: Option<NaiveTime>,
     pub sunset: Option<NaiveTime>,
@@ -46,7 +47,7 @@ pub struct TemplateMeta {
 
 impl Template {
     pub fn schedule(&self, meta: TemplateMeta) -> Schedule {
-        let mut time = meta.wake_up;
+        let mut time = meta.wake_up_today;
 
         let timeboxes = self
             .0
@@ -56,7 +57,8 @@ impl Template {
 
         Schedule {
             timeboxes,
-            wake_up: meta.wake_up,
+            wake_up: meta.wake_up_today,
+            wake_up_tomorrow: meta.wake_up_tomorrow,
             sunrise: meta.sunrise,
             sunset: meta.sunset,
         }

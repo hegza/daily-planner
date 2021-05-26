@@ -14,14 +14,23 @@ fn main() -> std::result::Result<(), daily_planner::editor::Error> {
             "-w --wake-up=[TIME] 'Sets the wake-up time. Will be rounded to next half an hour.'",
         ))
         .arg(Arg::from_usage(
+            "--wake-up-tomorrow=[TIME] 'Sets the wake-up time of tomorrow. Will be rounded to next half an hour.'",
+        ))
+        .arg(Arg::from_usage(
             "-t --template=[FILE] 'Sets the schedule template.'",
         ))
         .get_matches();
 
     // Determine time of wake up
     let default_wake_up = Time::hm(9, 0);
-    let wake_up = if let Some(wake_up) = matches.value_of("wake-up") {
+    let wake_up_today = if let Some(wake_up) = matches.value_of("wake-up") {
         Time::from_str(wake_up).unwrap_or(default_wake_up)
+    } else {
+        default_wake_up
+    }
+    .round_to_half();
+    let wake_up_tomorrow = if let Some(wake_up_tomorrow) = matches.value_of("wake-up-tomorrow") {
+        Time::from_str(wake_up_tomorrow).unwrap_or(default_wake_up)
     } else {
         default_wake_up
     }
@@ -39,7 +48,8 @@ fn main() -> std::result::Result<(), daily_planner::editor::Error> {
     // Create schedule from template
     let sunrise_sunset = daily_planner::twilight::get_sunrise_sunset_online();
     let meta = TemplateMeta {
-        wake_up,
+        wake_up_today,
+        wake_up_tomorrow,
         span_len: Duration::hm(3, 15),
         sunrise: sunrise_sunset.as_ref().ok().map(|x| x.0),
         sunset: sunrise_sunset.ok().map(|x| x.1),

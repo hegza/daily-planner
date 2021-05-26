@@ -7,6 +7,7 @@ use crate::{dom::TimeBox, editor::cursor::ContentCursor, time::Time};
 pub struct Schedule {
     pub timeboxes: Vec<TimeBox>,
     pub wake_up: Time,
+    pub wake_up_tomorrow: Time,
     pub sunrise: Option<NaiveTime>,
     pub sunset: Option<NaiveTime>,
 }
