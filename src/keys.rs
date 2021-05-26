@@ -39,6 +39,8 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
     - i: insert mode
     - h, l, left arrow, right arrow: adjust time by 1 hour
     - j, l, up arrow, down arrow: adjust time by 15 minutes
+    - H, L: adjust time by 5 minutes
+    - J, L: adjust time by 1 minute
     - r: toggle between relative and absolute time mode
     - f: toggle fixed time adjust policy
     - Esc: cursor mode
@@ -188,6 +190,42 @@ pub const BINDINGS: &[Binding] = &[
         Command::AdjustTime {
             hours: 0,
             minutes: -15
+        },
+        Filter::Mode(Mode::Time)
+    ),
+    bind!(
+        KeyCode::Char('H'),
+        KeyModifiers::SHIFT,
+        Command::AdjustTime {
+            hours: 0,
+            minutes: -5
+        },
+        Filter::Mode(Mode::Time)
+    ),
+    bind!(
+        KeyCode::Char('L'),
+        KeyModifiers::SHIFT,
+        Command::AdjustTime {
+            hours: 0,
+            minutes: 5
+        },
+        Filter::Mode(Mode::Time)
+    ),
+    bind!(
+        KeyCode::Char('J'),
+        KeyModifiers::SHIFT,
+        Command::AdjustTime {
+            hours: 0,
+            minutes: 1
+        },
+        Filter::Mode(Mode::Time)
+    ),
+    bind!(
+        KeyCode::Char('K'),
+        KeyModifiers::SHIFT,
+        Command::AdjustTime {
+            hours: 0,
+            minutes: -1
         },
         Filter::Mode(Mode::Time)
     ),
