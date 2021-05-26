@@ -129,6 +129,7 @@ impl FromStr for Time {
                     s
                 )),
                 TimeTemplate::RelativeTime(t) => Ok(t.into()),
+                TimeTemplate::AbsoluteTime(t) => Ok(t.into()),
             },
             Err(e) => Err(format!("{:?}", e)),
         }

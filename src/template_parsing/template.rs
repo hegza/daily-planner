@@ -32,6 +32,8 @@ pub enum TimeTemplate {
     TimeFormat,
     /// e.g. +0:15
     RelativeTime(Duration),
+    /// e.g. 14:00
+    AbsoluteTime(Duration),
 }
 
 // <!-- Conversions to concrete types -->
@@ -76,6 +78,11 @@ impl TimeBoxTemplate {
                         *cur_time += time;
                         TimeSlotKind::Time(*cur_time)
                     }
+                    TimeTemplate::AbsoluteTime(time) => {
+                        // Set time to given time
+                        *cur_time = Time::from(*time);
+                        TimeSlotKind::Time(*cur_time)
+                    }
                 },
                 TimeSlotTemplate::Span(start, end) => {
                     let start_time = match start {
@@ -85,6 +92,11 @@ impl TimeBoxTemplate {
                         TimeTemplate::RelativeTime(time) => {
                             // Advance time by given duration
                             *cur_time += time;
+                            *cur_time
+                        }
+                        TimeTemplate::AbsoluteTime(time) => {
+                            // Set time to given time
+                            *cur_time = Time::from(*time);
                             *cur_time
                         }
                     };
@@ -99,6 +111,10 @@ impl TimeBoxTemplate {
                         TimeTemplate::RelativeTime(duration) => {
                             // Advance time by given length
                             *cur_time += duration;
+                            *cur_time
+                        }
+                        TimeTemplate::AbsoluteTime(duration) => {
+                            *cur_time = Time::from(*duration);
                             *cur_time
                         }
                     };
