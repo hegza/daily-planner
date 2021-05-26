@@ -8,7 +8,7 @@ use fs_err as fs;
 use std::io::stdout;
 use std::str::FromStr;
 
-fn main() -> Result<()> {
+fn main() -> std::result::Result<(), daily_planner::editor::Error> {
     let matches = App::new("daily-planner")
         .arg(Arg::from_usage(
             "-w --wake-up=[TIME] 'Sets the wake-up time. Will be rounded to next half an hour.'",
@@ -34,7 +34,7 @@ fn main() -> Result<()> {
         None => default_template_file,
     };
     let template_text = fs::read_to_string(template_file).expect("could not read file");
-    let template = Template::from_str(&template_text).unwrap();
+    let template = Template::from_str(&template_text)?;
 
     // Create schedule from template
     let sunrise_sunset = daily_planner::twilight::get_sunrise_sunset_online();
