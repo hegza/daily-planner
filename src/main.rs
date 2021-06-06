@@ -30,9 +30,9 @@ fn main() -> std::result::Result<(), daily_planner::editor::Error> {
     }
     .round_to_half();
     let wake_up_tomorrow = if let Some(wake_up_tomorrow) = matches.value_of("wake-up-tomorrow") {
-        Time::from_str(wake_up_tomorrow).unwrap_or(default_wake_up)
+        Time::from_str(wake_up_tomorrow).unwrap_or(wake_up_today)
     } else {
-        default_wake_up
+        wake_up_today
     }
     .round_to_half();
 
