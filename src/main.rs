@@ -1,5 +1,4 @@
 use clap::{App, Arg};
-use crossterm::Result;
 use daily_planner::editor::{EditorLike, State};
 use daily_planner::template_parsing::{Template, TemplateMeta};
 use daily_planner::time::Duration;
