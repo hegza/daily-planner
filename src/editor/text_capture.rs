@@ -77,7 +77,7 @@ impl TextCapture {
 
                 // Make into capital letter if shift is pressed
                 if modifiers.intersects(KeyModifiers::SHIFT) {
-                    c = c.to_uppercase().next().unwrap();
+                    c = c.to_uppercase().next().expect("programmer logic error");
                 };
 
                 // Insert the character into captured text at cursor position

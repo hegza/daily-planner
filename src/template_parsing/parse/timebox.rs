@@ -42,22 +42,18 @@ impl<'t> TemplateTimeBoxParser<'t> {
     pub fn generate(mut self) -> Result<TimeBoxTemplate, ParseError> {
         let first_token = self.tokens.peek();
 
-        if first_token == None {
-            return Err(ParseError::EmptyString);
-        }
-
-        let next = *first_token.unwrap();
-        let first_char = next.trim().chars().next().unwrap();
+        let next = *first_token.ok_or(ParseError::EmptyString)?;
+        let first_char = next.trim().chars().next().ok_or(ParseError::EmptyString)?;
         if MARKDOWN_LIST_TOKENS.contains(&first_char) {
             // Skip the list token
-            self.tokens.next().unwrap();
+            self.tokens.next().expect("prgrammer logic error");
         }
 
         let mut time = None;
         let mut activity = None;
 
         while let Some(next) = self.tokens.next() {
-            match self.token_kind(next) {
+            match self.token_kind(next)? {
                 TokenKind::ListInitializer => {
                     unreachable!();
                 }
@@ -69,14 +65,14 @@ impl<'t> TemplateTimeBoxParser<'t> {
                     if activity.is_none() {
                         activity = Some(Activity::default());
                     }
-                    activity.as_mut().unwrap().kind = kind;
+                    activity.as_mut().expect("programmer logic error").kind = kind;
                 }
                 TokenKind::ActivityText => {
                     let all = std::iter::once(next).chain(self.tokens.clone()).join(" ");
                     if activity.is_none() {
                         activity = Some(Activity::default());
                     }
-                    activity.as_mut().unwrap().summary = all;
+                    activity.as_mut().expect("programmer logic error").summary = all;
                     break;
                 }
             }
@@ -90,19 +86,21 @@ impl<'t> TemplateTimeBoxParser<'t> {
 
     /// Figure out which kind of token this one is. State machine. Sets
     /// self.timeslot_detected as true if a timeslot is parsed.
-    fn token_kind(&mut self, token: &str) -> TokenKind {
+    fn token_kind(&mut self, token: &str) -> Result<TokenKind, ParseError> {
         let token = token.trim();
 
         // List initializer, e.g. '-' or '*'
-        if token.len() == 1 && MARKDOWN_LIST_TOKENS.contains(&token.chars().next().unwrap()) {
-            return TokenKind::ListInitializer;
+        if token.len() == 1
+            && MARKDOWN_LIST_TOKENS.contains(&token.chars().next().ok_or(ParseError::EmptyString)?)
+        {
+            return Ok(TokenKind::ListInitializer);
         }
 
         // If no time-slot is detected and the token parses into one, use that
         if !self.timeslot_detected {
             if let Ok(time_slot) = TimeSlotTemplate::from_str(token) {
                 self.timeslot_detected = true;
-                return TokenKind::Time(time_slot);
+                return Ok(TokenKind::Time(time_slot));
             }
         }
 
@@ -115,13 +113,13 @@ impl<'t> TemplateTimeBoxParser<'t> {
             if let Ok(activity_kind) = ActivityKind::from_str(&activity_maybe) {
                 if activity_kind != ActivityKind::Unknown {
                     self.activity_kind_identified = true;
-                    return TokenKind::ActivityKind(activity_kind);
+                    return Ok(TokenKind::ActivityKind(activity_kind));
                 }
             }
         }
 
         // If nothing else applies, this token is "content"
-        TokenKind::ActivityText
+        Ok(TokenKind::ActivityText)
     }
 }
 

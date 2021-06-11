@@ -17,4 +17,10 @@ pub enum Error {
     Strfmt(#[from] strfmt::FmtError),
     #[error("template parse error")]
     TemplateParse(#[from] template_parsing::ParseError),
+    #[error("resource ownership error")]
+    ResourceOwnership(#[from] ResourceOwnershipError),
 }
+
+#[derive(Error, Debug)]
+#[error("ownership violation")]
+pub struct ResourceOwnershipError(pub String);

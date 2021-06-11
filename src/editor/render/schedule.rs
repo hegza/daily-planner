@@ -26,8 +26,9 @@ impl Render for Schedule {
 
         for time_box in self.timeboxes.iter() {
             if self.sunrise.is_some() && self.sunset.is_some() {
-                let sunrise = self.sunrise.unwrap();
-                let sunset = self.sunset.unwrap();
+                let sunrise = self.sunrise.expect("logic error");
+                let sunset = self.sunset.expect("logic error");
+
                 if let Some(time) = &time_box.time {
                     let time = match time {
                         TimeSlotKind::Time(t) => t,
