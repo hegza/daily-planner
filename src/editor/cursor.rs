@@ -214,6 +214,7 @@ impl ContentCursor {
         }
     }
 
+    /// Makes the API call to crossterm, moving the cursor to target terminal position.
     fn move_terminal_cursor(screen_h: u16, screen_v: u16, stdout: &mut Stdout) -> Result<()> {
         Ok(stdout.queue(cursor::MoveTo(screen_h, screen_v))?.flush()?)
     }

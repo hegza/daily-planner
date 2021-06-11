@@ -25,9 +25,10 @@ impl Default for CommandInput {
 }
 
 impl CommandInput {
-    pub fn capture(&mut self, stdout: &mut Stdout) -> Option<Command> {
+    /// Captures stdout and blocks while updating the CommandInput contents based on input.
+    pub fn capture(&mut self, stdout: &mut Stdout) -> crossterm::Result<Option<Command>> {
         loop {
-            let ev = crossterm::event::read().unwrap();
+            let ev = crossterm::event::read()?;
             let redraw = match ev {
                 Event::Key(k) => {
                     // Enter breaks out of command input
@@ -40,16 +41,12 @@ impl CommandInput {
                     use std::cmp::Ordering;
                     match cursor_move.cmp(&0) {
                         Ordering::Greater => stdout
-                            .queue(cursor::MoveRight(cursor_move as u16))
-                            .unwrap()
-                            .flush()
-                            .unwrap(),
+                            .queue(cursor::MoveRight(cursor_move as u16))?
+                            .flush()?,
                         Ordering::Equal => {}
                         Ordering::Less => stdout
-                            .queue(cursor::MoveLeft((-cursor_move) as u16))
-                            .unwrap()
-                            .flush()
-                            .unwrap(),
+                            .queue(cursor::MoveLeft((-cursor_move) as u16))?
+                            .flush()?,
                     }
 
                     redraw
@@ -61,7 +58,7 @@ impl CommandInput {
             if redraw {}
         }
 
-        input_into_command(&self.cur_input.text())
+        Ok(input_into_command(&self.cur_input.text()))
     }
 }
 

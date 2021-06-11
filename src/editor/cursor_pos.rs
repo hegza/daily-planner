@@ -87,8 +87,9 @@ impl MappedPos {
         self
     }
 
-    /// Maps content to cursor (0, 0) being the first character on the first
-    /// item of the day at e.g. position (13, 0). Returns None on out-of-bounds.
+    /// Uses the content to map the current cursor position into a terminal position.
+    /// (0, 0) is the first character on the first item of the day at e.g. terminal
+    /// position (13, 0). Returns None when cursor is out-of-bounds.
     pub fn map_to_terminal(
         &self,
         render_y: u16,

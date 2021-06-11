@@ -519,7 +519,7 @@ impl State {
     fn open_command_input(&mut self) -> Result<()> {
         let mut input = CommandInput::default();
 
-        if let Some(cmd) = input.capture(&mut self.stdout) {
+        if let Some(cmd) = input.capture(&mut self.stdout)? {
             self.act(&cmd)?;
             self.render().expect("cannot redraw");
         }
