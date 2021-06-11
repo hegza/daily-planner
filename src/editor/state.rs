@@ -99,10 +99,8 @@ impl State {
             let mut stdout = &mut self.stdout;
 
             // Clear screen and move cursor to top-left
-            stdout
-                .execute(terminal::Clear(terminal::ClearType::All))
-                .unwrap();
-            stdout.queue(cursor::MoveTo(0, 0)).unwrap();
+            stdout.execute(terminal::Clear(terminal::ClearType::All))?;
+            stdout.queue(cursor::MoveTo(0, 0))?;
 
             // Render schedule while measuring it's height
             let y = cursor::position()?.1;
@@ -118,16 +116,6 @@ impl State {
                 .rev()
                 .find_map(|time_box| time_box.time.clone())
             {
-                let first_timed_item = self
-                    .schedule
-                    .timeboxes
-                    .iter()
-                    .find_map(|time_box| time_box.time.clone())
-                    .unwrap();
-                let first_time = match &first_timed_item {
-                    TimeSlotKind::Time(t) => t,
-                    TimeSlotKind::Span(start, _) => start,
-                };
                 let last_time = match &last_timed_item {
                     TimeSlotKind::Time(t) => t,
                     TimeSlotKind::Span(_, end) => end,
